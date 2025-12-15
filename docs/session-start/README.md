@@ -6,9 +6,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 3 - Programmatic SEO (Complete) |
-| **Last Updated** | 2025-12-14 |
-| **Next Task** | Set up Meilisearch for search functionality |
+| **Current Phase** | Phase 4 - Search (Complete) |
+| **Last Updated** | 2025-12-15 |
+| **Next Task** | Supabase Auth (magic link + Google) |
 | **Blockers** | None |
 
 ## Quick Links
@@ -74,6 +74,15 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - [x] Robots.txt configuration (`robots.ts`)
 - [ ] Submit to Google Search Console (manual step)
 
+### Phase 4: Search (DONE)
+- [x] Install Meilisearch client library
+- [x] Create Meilisearch client utilities (admin & search)
+- [x] Build sync utility to index tools/deals
+- [x] Create `/api/search` endpoint with Supabase fallback
+- [x] Create `/api/search/sync` endpoint for data sync
+- [x] Build SearchBox component with instant results
+- [x] Integrate SearchBox into Header
+
 ### What's Built
 - Full project structure with Next.js 16 + Tailwind CSS 4
 - Dark theme with purple primary / green accent colors
@@ -92,6 +101,10 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - `/best/[category]` pages ranking top tools per category
 - Dynamic sitemap.xml with all tools, categories, comparisons
 - Robots.txt configuration
+- SearchBox component with instant results dropdown
+- Meilisearch integration (with Supabase fallback)
+- /api/search endpoint for search queries
+- /api/search/sync endpoint to sync data to Meilisearch
 
 ## Database Stats
 
@@ -103,11 +116,6 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 | tool_categories | 31 |
 
 ## Next Steps
-
-### Phase 4: Search
-- [ ] Set up Meilisearch Cloud
-- [ ] Index tools and deals
-- [ ] Build SearchBox component with instant results
 
 ### Phase 5: User Features
 - [ ] Supabase Auth (magic link + Google)
@@ -134,6 +142,9 @@ Needed for production:
 SUPABASE_SERVICE_ROLE_KEY=     # For admin operations
 CRON_SECRET=                    # Protect cron endpoints
 APPSUMO_AFFILIATE_ID=           # AppSumo partner ID
+NEXT_PUBLIC_MEILISEARCH_HOST=   # Meilisearch Cloud host
+MEILISEARCH_ADMIN_KEY=          # Meilisearch admin key (server-side)
+NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=  # Meilisearch search key (client-safe)
 ```
 
 ## To Run Locally
