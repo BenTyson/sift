@@ -2,6 +2,59 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-14 - Session 3: Programmatic SEO Complete
+
+### Added
+
+**Comparison Pages (`/vs/[comparison]`)**
+- Tool-vs-tool comparison pages (e.g., `/vs/jasper-vs-copy-ai`)
+- Side-by-side feature comparison table
+- Pricing comparison
+- "Best for" recommendations
+- Quick verdict section
+- Related comparisons links
+
+**Alternatives Pages (`/alternatives/[tool]`)**
+- Ranked alternatives for each tool (e.g., `/alternatives/jasper`)
+- Top alternative highlight with trophy badge
+- Full alternatives list with rankings
+- Compare buttons linking to /vs/ pages
+- Related links section
+
+**Best-of Pages (`/best/[category]`)**
+- Category ranking pages (e.g., `/best/writing`)
+- Top 3 showcase with trophy, medal, award icons
+- Quick navigation for large lists
+- Full rankings with pricing and features
+- Explore other categories section
+
+**SEO Infrastructure**
+- `sitemap.ts` - Dynamic sitemap generation
+  - All tool pages
+  - All alternatives pages
+  - All best-of category pages
+  - Top 15 tool comparison combinations
+- `robots.ts` - Robots.txt configuration
+  - Allow all paths except /api/ and /admin/
+  - Sitemap reference
+
+### Technical Notes
+- Used `export const dynamic = 'force-dynamic'` for all SEO pages
+- Avoided `generateStaticParams` due to cookies/auth context limitation
+- Added explicit type assertions for Supabase queries to fix TypeScript inference
+
+### Build Status
+- All routes compile successfully
+- TypeScript passes
+- Ready for production
+
+### Next Session
+- Set up Meilisearch Cloud for search
+- Index tools and deals
+- Build SearchBox component with instant results
+
+---
+
 ## 2025-12-14 - Session 2: Deals Engine Complete
 
 ### Added

@@ -6,10 +6,10 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 2 - Deals Engine (Complete) |
+| **Current Phase** | Phase 3 - Programmatic SEO (Complete) |
 | **Last Updated** | 2025-12-14 |
-| **Next Task** | Build SEO pages (/vs/, /alternatives/) |
-| **Blockers** | None - Site is live with real data |
+| **Next Task** | Set up Meilisearch for search functionality |
+| **Blockers** | None |
 
 ## Quick Links
 
@@ -30,10 +30,10 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 **Core Features**:
 1. Tool directory (31 AI tools seeded, searchable, filterable)
 2. Deal feed (14 deals seeded, scraper infrastructure ready)
-3. Comparison engine (side-by-side tool comparisons) - TODO
+3. Comparison engine (side-by-side tool comparisons) - DONE
 4. Deal alerts (email notifications) - TODO
 5. Community (upvotes, submissions) - TODO
-6. Programmatic SEO pages (/vs/, /alternatives/, /pricing/) - TODO
+6. Programmatic SEO pages (/vs/, /alternatives/, /best/) - DONE
 
 ## Tech Stack (LOCKED - Do Not Change)
 
@@ -66,6 +66,14 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - [x] Create scraper orchestrator with tool matching
 - [x] Add cron endpoints (`/api/cron/scrape-deals`, `/api/cron/expire-deals`)
 
+### Phase 3: Programmatic SEO (DONE)
+- [x] Create `/vs/[comparison]` pages (tool vs tool comparisons)
+- [x] Create `/alternatives/[tool]` pages (ranked alternatives)
+- [x] Create `/best/[category]` pages (top tools per category)
+- [x] Dynamic sitemap generation (`sitemap.ts`)
+- [x] Robots.txt configuration (`robots.ts`)
+- [ ] Submit to Google Search Console (manual step)
+
 ### What's Built
 - Full project structure with Next.js 16 + Tailwind CSS 4
 - Dark theme with purple primary / green accent colors
@@ -79,6 +87,11 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - Database with seeded data (31 tools, 14 deals, 15 categories)
 - AppSumo scraper with Cheerio
 - Cron API routes for automated scraping
+- `/vs/[comparison]` pages for tool-vs-tool comparisons
+- `/alternatives/[tool]` pages showing ranked alternatives
+- `/best/[category]` pages ranking top tools per category
+- Dynamic sitemap.xml with all tools, categories, comparisons
+- Robots.txt configuration
 
 ## Database Stats
 
@@ -90,13 +103,6 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 | tool_categories | 31 |
 
 ## Next Steps
-
-### Phase 3: SEO Pages
-- [ ] Create `/vs/[comparison]` pages (tool vs tool)
-- [ ] Create `/alternatives/[tool]` pages
-- [ ] Create `/best/[category]` pages
-- [ ] Dynamic sitemap generation
-- [ ] Submit to Google Search Console
 
 ### Phase 4: Search
 - [ ] Set up Meilisearch Cloud
@@ -173,6 +179,11 @@ sift/
 │   │   ├── page.tsx             # Homepage
 │   │   ├── tools/               # Tool pages
 │   │   ├── deals/               # Deal pages
+│   │   ├── vs/                  # Comparison pages
+│   │   ├── alternatives/        # Alternatives pages
+│   │   ├── best/                # Best-of pages
+│   │   ├── sitemap.ts           # Dynamic sitemap
+│   │   ├── robots.ts            # Robots.txt
 │   │   └── api/cron/            # Cron endpoints
 │   ├── components/
 │   │   ├── ui/                  # shadcn
