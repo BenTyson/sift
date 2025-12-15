@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Search, Menu, X } from 'lucide-react'
+import { Search, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { SearchBox } from '@/components/search'
 
 const navLinks = [
   { href: '/tools', label: 'Tools' },
@@ -42,14 +42,7 @@ export function Header() {
 
         {/* Desktop Search & CTA */}
         <div className="hidden md:flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search tools..."
-              className="w-64 pl-9 bg-secondary/50 border-0 focus-visible:ring-1"
-            />
-          </div>
+          <SearchBox className="w-72" placeholder="Search AI tools..." />
           <Button variant="default" size="sm">
             Submit Tool
           </Button>
@@ -93,15 +86,10 @@ export function Header() {
       {/* Mobile Search Bar */}
       {isSearchOpen && (
         <div className="md:hidden border-t border-border/40 p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search tools..."
-              className="w-full pl-9 bg-secondary/50 border-0"
-              autoFocus
-            />
-          </div>
+          <SearchBox
+            placeholder="Search AI tools..."
+            onSelect={() => setIsSearchOpen(false)}
+          />
         </div>
       )}
     </header>
