@@ -2,6 +2,70 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-18 - Session 8: Email System (Phase 6)
+
+### Added
+
+**Email Infrastructure (Resend + React Email)**
+- Installed `resend` and `@react-email/components` packages
+- `src/lib/email/client.ts` - Resend client with graceful degradation
+  - `resend` - Client instance (null if API key not configured)
+  - `FROM_EMAIL` - Default sender address
+  - `isEmailConfigured()` - Check if email is available
+- `src/lib/email/index.ts` - Barrel exports
+
+**Email Templates (React Email)**
+- `src/lib/email/templates/DealAlert.tsx`
+  - Triggered when new deal matches user's alert criteria
+  - Shows deal details, discount, tool info
+  - Unsubscribe link for one-click removal
+- `src/lib/email/templates/WeeklyDigest.tsx`
+  - Weekly summary of top deals and new tools
+  - Stats banner (total deals, potential savings)
+  - Browse deals CTA button
+  - Unsubscribe link
+
+**Email Send Functions**
+- `src/lib/email/send.ts`
+  - `sendDealAlertEmail()` - Send deal alert notification
+  - `sendWeeklyDigestEmail()` - Send weekly digest
+
+**Cron Endpoints**
+- `/api/cron/send-deal-alerts` - Process new deals and send notifications
+  - Fetches deals created in last hour
+  - Matches against user tool/category alerts
+  - Respects minimum discount thresholds
+  - Protected by CRON_SECRET
+- `/api/cron/send-weekly-digest` - Send weekly digest to subscribers
+  - Aggregates top 5 deals and new tools from past week
+  - Sends to newsletter_subscribers with weekly frequency
+  - Sends to profiles with weekly digest preference
+  - Protected by CRON_SECRET
+
+**Unsubscribe Handler**
+- `/api/unsubscribe` - One-click unsubscribe via GET request
+  - `?type=alert&id=xxx` - Deletes specific deal alert
+  - `?type=digest&id=xxx` - Disables digest for subscriber/user
+  - Redirects to homepage with status parameter
+
+### Environment Variables (new)
+```env
+RESEND_API_KEY=re_xxx           # Resend API key
+FROM_EMAIL=SIFT <noreply@sift.tools>  # Sender address
+```
+
+### Technical Notes
+- Supabase admin client created lazily in handlers (not at module level)
+- Email sending fails gracefully when not configured
+- Type assertions used for Supabase join queries
+- All endpoints work without email configured (logs skipped sends)
+
+### Build Status
+- All 29 routes compile successfully
+- TypeScript passes
+
+---
+
 ## 2025-12-18 - Session 7: UI Color Refinement
 
 ### Changed

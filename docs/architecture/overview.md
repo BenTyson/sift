@@ -47,9 +47,9 @@
 | Framework | Next.js 16 (App Router) | SSR for SEO, server components, API routes |
 | Database | Supabase | PostgreSQL + Auth + Realtime, generous free tier |
 | Styling | Tailwind CSS 4 + shadcn/ui | Rapid development, fully customizable |
-| Search | Meilisearch Cloud | Fast, typo-tolerant, easy setup (not yet configured) |
+| Search | Meilisearch Cloud | Fast, typo-tolerant, easy setup |
 | Hosting | Railway | Docker-based, full Node.js support |
-| Email | Resend | Developer-friendly, React Email templates (not yet configured) |
+| Email | Resend | Developer-friendly, React Email templates |
 | Scraping | Cheerio | Fast HTML parsing for deal scraping |
 
 ## Current Implementation Status
@@ -59,18 +59,19 @@
 - [x] Supabase PostgreSQL database
 - [x] Supabase client utilities (server, client, middleware)
 - [x] Tailwind CSS 4 + shadcn/ui components
-- [x] Dark theme with purple/green accent
+- [x] Dark theme with aqua monochromatic palette
 - [x] Homepage, Tools directory, Tool detail pages
 - [x] Deals page with filters
 - [x] AppSumo scraper with Cheerio
-- [x] Cron endpoints for deal scraping
-
-### Not Yet Implemented
-- [ ] Meilisearch search
-- [ ] Supabase Auth
-- [ ] Resend email
-- [ ] SEO pages (/vs/, /alternatives/)
-- [ ] Sitemap generation
+- [x] Cron endpoints for deal scraping/expiration
+- [x] Meilisearch search with Supabase fallback
+- [x] Supabase Auth (magic link + Google OAuth)
+- [x] Voting system
+- [x] SEO pages (/vs/, /alternatives/, /best/)
+- [x] Dynamic sitemap generation
+- [x] Deal alerts system
+- [x] Tool/deal submission system
+- [x] Resend email (deal alerts, weekly digest)
 
 ## Key Patterns
 
@@ -112,6 +113,8 @@ Cron endpoints are available at:
 |----------|---------|------------|
 | `/api/cron/scrape-deals` | Run all deal scrapers | CRON_SECRET header |
 | `/api/cron/expire-deals` | Mark expired deals inactive | CRON_SECRET header |
+| `/api/cron/send-deal-alerts` | Send email alerts for new deals | CRON_SECRET header |
+| `/api/cron/send-weekly-digest` | Send weekly digest newsletter | CRON_SECRET header |
 
 To trigger manually:
 ```bash
@@ -139,11 +142,14 @@ SUPABASE_SERVICE_ROLE_KEY=     # Admin operations
 CRON_SECRET=                    # Protect cron endpoints
 APPSUMO_AFFILIATE_ID=           # AppSumo partner ID
 
-# Future
+# Search (Meilisearch)
 NEXT_PUBLIC_MEILISEARCH_HOST=
 MEILISEARCH_ADMIN_KEY=
 NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=
-RESEND_API_KEY=
+
+# Email (Resend)
+RESEND_API_KEY=                 # Resend API key
+FROM_EMAIL=                     # Sender address (default: SIFT <noreply@sift.tools>)
 ```
 
 ## File Structure
