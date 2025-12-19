@@ -133,9 +133,9 @@ export function DealCard({
             </h3>
           </div>
 
-          {/* Discount Badge */}
+          {/* Discount Badge - outline style */}
           {deal.discount_percent && deal.discount_percent >= 20 && (
-            <div className="shrink-0 flex flex-col items-center justify-center bg-accent text-accent-foreground rounded-lg px-3 py-2">
+            <div className="shrink-0 flex flex-col items-center justify-center border-2 border-primary text-primary rounded-lg px-3 py-2">
               <span className="text-xl font-bold leading-none">
                 {deal.discount_percent}%
               </span>
@@ -205,11 +205,11 @@ export function DealCard({
             </div>
           )}
 
-          {/* CTA */}
+          {/* CTA - white outline button */}
           <Button
             asChild
             size="sm"
-            className="ml-auto"
+            className="ml-auto border-2 border-foreground/70 text-foreground bg-transparent hover:bg-foreground/10"
           >
             <a
               href={deal.affiliate_url || deal.source_url || '#'}

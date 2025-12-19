@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { SearchBox } from '@/components/search'
+import { UserMenu } from '@/components/auth'
 
 const navLinks = [
   { href: '/tools', label: 'Tools' },
@@ -43,9 +44,10 @@ export function Header() {
         {/* Desktop Search & CTA */}
         <div className="hidden md:flex items-center gap-4">
           <SearchBox className="w-72" placeholder="Search AI tools..." />
-          <Button variant="default" size="sm">
-            Submit Tool
+          <Button asChild variant="outline" size="sm">
+            <Link href="/submit">Submit Tool</Link>
           </Button>
+          <UserMenu />
         </div>
 
         {/* Mobile Controls */}
@@ -76,7 +78,12 @@ export function Header() {
                   </Link>
                 ))}
                 <hr className="border-border my-2" />
-                <Button className="w-full">Submit Tool</Button>
+                <Button asChild className="w-full">
+                  <Link href="/submit">Submit Tool</Link>
+                </Button>
+                <div className="flex justify-center">
+                  <UserMenu />
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

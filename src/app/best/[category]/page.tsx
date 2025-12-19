@@ -5,7 +5,9 @@ import { ArrowRight, ExternalLink, Trophy, Medal, Award, Star } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { DealAlertButton } from '@/components/alerts'
 import { createClient } from '@/lib/supabase/server'
+import { getUserAlertForCategory } from '@/lib/actions/alerts'
 import type { Tool, Category } from '@/types'
 
 interface BestCategoryPageProps {
@@ -120,6 +122,9 @@ export default async function BestCategoryPage({ params }: BestCategoryPageProps
     .order('display_order')
     .limit(6) as { data: { slug: string; name: string }[] | null }
 
+  // Get user's alert status for this category
+  const existingAlertId = await getUserAlertForCategory(category.id)
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -138,13 +143,19 @@ export default async function BestCategoryPage({ params }: BestCategoryPageProps
             {category.description || `Discover the top ${category.name.toLowerCase()} AI tools. We've ranked ${rankedTools.length} tools based on features, user ratings, and value for money.`}
           </p>
 
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center gap-4 mt-6">
             <Badge variant="secondary" className="text-sm">
               {rankedTools.length} Tools Ranked
             </Badge>
             <span className="text-sm text-muted-foreground">
               Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
+            <DealAlertButton
+              type="category"
+              targetId={category.id}
+              targetName={category.name}
+              existingAlertId={existingAlertId}
+            />
           </div>
         </div>
       </div>

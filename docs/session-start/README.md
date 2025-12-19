@@ -6,9 +6,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 4 - Search (Complete) |
-| **Last Updated** | 2025-12-15 |
-| **Next Task** | Supabase Auth (magic link + Google) |
+| **Current Phase** | Phase 5 - User Features (In Progress) |
+| **Last Updated** | 2025-12-18 |
+| **Next Task** | Phase 6 - Email setup (Resend) |
 | **Blockers** | None |
 
 ## Quick Links
@@ -31,8 +31,8 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 1. Tool directory (31 AI tools seeded, searchable, filterable)
 2. Deal feed (14 deals seeded, scraper infrastructure ready)
 3. Comparison engine (side-by-side tool comparisons) - DONE
-4. Deal alerts (email notifications) - TODO
-5. Community (upvotes, submissions) - TODO
+4. Deal alerts (subscribe to tools/categories) - DONE
+5. Community (upvotes, tool/deal submissions) - DONE
 6. Programmatic SEO pages (/vs/, /alternatives/, /best/) - DONE
 
 ## Tech Stack (LOCKED - Do Not Change)
@@ -105,6 +105,18 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - Meilisearch integration (with Supabase fallback)
 - /api/search endpoint for search queries
 - /api/search/sync endpoint to sync data to Meilisearch
+- Authentication (magic link + Google OAuth)
+- Auth pages: /login, /signup, /forgot-password, /auth/reset-password
+- UserMenu component with dropdown in Header
+- Profile pages: /profile, /profile/alerts, /profile/settings, /profile/submissions
+- RLS policies for database security
+- Voting system with optimistic UI updates
+- Deal alerts system (subscribe to tools or categories)
+- DealAlertButton component on tool/category pages
+- Tool/deal submission system with review workflow
+- /submit, /submit/tool, /submit/deal pages
+- tool_submissions and deal_submissions tables
+- Refined UI color scheme (aqua monochromatic, outline buttons)
 
 ## Database Stats
 
@@ -117,15 +129,15 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 
 ## Next Steps
 
-### Phase 5: User Features
-- [ ] Supabase Auth (magic link + Google)
-- [ ] Voting system
-- [ ] Deal alerts
-- [ ] Tool/deal submission
+### Phase 5: User Features (COMPLETE)
+- [x] Supabase Auth (magic link + Google)
+- [x] Voting system
+- [x] Deal alerts (subscribe to tools/categories)
+- [x] Tool/deal submission forms
 
-### Phase 6: Email
+### Phase 6: Email (TODO)
 - [ ] Set up Resend
-- [ ] Deal alert emails
+- [ ] Deal alert emails (notify when new deals match subscriptions)
 - [ ] Weekly digest newsletter
 
 ## Environment Variables
@@ -135,6 +147,7 @@ Currently configured in `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=https://jnbgkxhmpvryywftzmep.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+SUPABASE_ACCESS_TOKEN=sbp_...   # CLI access token
 ```
 
 Needed for production:
@@ -145,6 +158,24 @@ APPSUMO_AFFILIATE_ID=           # AppSumo partner ID
 NEXT_PUBLIC_MEILISEARCH_HOST=   # Meilisearch Cloud host
 MEILISEARCH_ADMIN_KEY=          # Meilisearch admin key (server-side)
 NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=  # Meilisearch search key (client-safe)
+```
+
+## Supabase CLI
+
+The project is linked to Supabase Cloud. Common commands:
+
+```bash
+# Push new migrations to remote
+supabase db push
+
+# View migration status
+supabase migration list
+
+# Generate migration from schema changes
+supabase db diff -f migration_name
+
+# Regenerate TypeScript types
+supabase gen types typescript --linked > src/types/database.ts
 ```
 
 ## To Run Locally

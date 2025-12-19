@@ -109,7 +109,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
                     href="/deals"
                     className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                       !selectedType
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary/70 text-primary-foreground'
                         : 'hover:bg-secondary'
                     }`}
                   >
@@ -125,7 +125,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
                         href={`/deals?type=${filter.value}${selectedSource ? `&source=${selectedSource}` : ''}`}
                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                           selectedType === filter.value
-                            ? 'bg-primary text-primary-foreground'
+                            ? 'bg-primary/70 text-primary-foreground'
                             : 'hover:bg-secondary'
                         }`}
                       >

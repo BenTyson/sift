@@ -6,6 +6,7 @@ import type { Tool, Category } from '@/types'
 interface ToolGridProps {
   tools: Tool[]
   categories?: Record<string, Category[]>
+  userVotes?: Record<string, number>
   variant?: 'default' | 'compact' | 'featured'
   loading?: boolean
   emptyMessage?: string
@@ -51,6 +52,7 @@ function ToolCardSkeleton({ variant = 'default' }: { variant?: string }) {
 export function ToolGrid({
   tools,
   categories = {},
+  userVotes = {},
   variant = 'default',
   loading = false,
   emptyMessage = 'No tools found',
@@ -88,6 +90,7 @@ export function ToolGrid({
           tool={tool}
           categories={categories[tool.id]}
           variant={variant}
+          userVote={userVotes[tool.id] ?? null}
         />
       ))}
     </div>

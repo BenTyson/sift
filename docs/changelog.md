@@ -2,6 +2,171 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-18 - Session 7: UI Color Refinement
+
+### Changed
+
+**Color Scheme Overhaul**
+- Replaced purple/green dual-color scheme with unified aqua monochromatic palette
+- Background: softer charcoal with cool tint (easier on eyes)
+- Primary: aqua/teal (hue 180°) for all accent colors
+- Removed harsh neon saturation, refined to sophisticated tones
+
+**Button Styling**
+- Default buttons: outline style (aqua border, aqua text, transparent bg)
+- "Get Deal" buttons: white outline for better contrast
+- Side nav selected state: solid aqua at 70% opacity
+
+**Badge Styling**
+- Pricing badges (Free, Freemium, Paid): outline style with transparent background
+- Discount badges (88% OFF): aqua outline instead of solid fill
+- Improved contrast and readability across all badges
+
+**Other**
+- Dev server now runs on port 4477 by default
+
+### Files Modified
+- `src/app/globals.css` - Complete color variable overhaul
+- `src/components/ui/button.tsx` - Default variant now outline
+- `src/components/deals/DealCard.tsx` - Discount badge and CTA button styling
+- `src/components/tools/ToolCard.tsx` - Pricing badge styling
+- `src/app/deals/page.tsx` - Side nav selected state opacity
+- `package.json` - Dev port set to 4477
+
+---
+
+## 2025-12-17 - Session 6: Deal Alerts & Submissions Complete
+
+### Added
+
+**Deal Alerts System**
+- `src/lib/actions/alerts.ts` - Server actions for alert CRUD
+  - createToolAlert, createCategoryAlert, deleteAlert
+  - getUserAlertForTool, getUserAlertForCategory
+- `src/components/alerts/DealAlertButton.tsx` - Subscribe/unsubscribe button
+- Added DealAlertButton to tool detail pages (`/tools/[slug]`)
+- Added DealAlertButton to category best-of pages (`/best/[category]`)
+- Enhanced `/profile/alerts` with delete functionality
+- `src/app/profile/alerts/DeleteAlertButton.tsx` - Delete alert button
+
+**Tool/Deal Submission System**
+- `supabase/migrations/20241217000000_tool_submissions.sql`
+  - tool_submissions table with review workflow
+  - deal_submissions table with tool linking
+  - RLS policies for user submissions
+- `src/lib/actions/submissions.ts` - Server actions
+  - submitTool, submitDeal
+  - getUserToolSubmissions, getUserDealSubmissions
+- `/submit` - Submission hub page (choose tool or deal)
+- `/submit/tool` - Tool submission form
+  - ToolSubmissionForm component with category selection
+  - Feature tags, pricing model, validation
+- `/submit/deal` - Deal submission form
+  - DealSubmissionForm with existing/new tool toggle
+  - Price fields, coupon code, expiration date
+- `/profile/submissions` - View user's submissions and status
+
+**New UI Components**
+- `src/components/ui/textarea.tsx` - Textarea component
+- `src/components/ui/label.tsx` - Label component (radix)
+- `src/components/ui/select.tsx` - Select dropdown (radix)
+- `src/components/ui/tabs.tsx` - Tabs component (radix)
+
+**Dependencies**
+- @radix-ui/react-label
+- @radix-ui/react-select
+- @radix-ui/react-tabs
+
+**User Menu Updates**
+- Added "My Submissions" link to UserMenu dropdown
+
+### Technical Notes
+- Used `as any` type assertions for new submission tables (types not regenerated)
+- Migration pushed to Supabase Cloud
+- All pages use server components with Suspense where needed
+
+### Build Status
+- All 24 routes compile successfully
+- TypeScript passes
+
+### Next Session
+- Phase 6: Email (Resend setup)
+- Deal alert email notifications
+- Weekly digest newsletter
+
+---
+
+## 2025-12-16 - Session 5: Authentication & Voting Complete
+
+### Added
+
+**Auth Infrastructure**
+- `src/lib/supabase/hooks.ts` - useUser and useSession client hooks
+- `src/lib/supabase/actions.ts` - Server actions for auth operations
+  - signInWithEmail (magic link)
+  - signInWithPassword
+  - signUp
+  - signOut
+  - resetPassword
+  - updatePassword
+  - signInWithGoogle (OAuth)
+
+**Auth Pages**
+- `/login` - Magic link and Google sign-in
+- `/signup` - Email/password registration with Google option
+- `/forgot-password` - Password reset request
+- `/auth/reset-password` - Set new password
+- `/auth/callback` - OAuth callback handler
+
+**User Menu & Profile**
+- `src/components/auth/UserMenu.tsx` - User dropdown in Header
+- `/profile` - View/edit profile (username)
+- `/profile/alerts` - View deal alerts
+- `/profile/settings` - Notification preferences, sign out
+
+**Database Security**
+- `supabase/migrations/20241215000000_auth_rls_policies.sql`
+  - Auto-create profile on signup trigger
+  - RLS policies for all user tables
+  - Public read access for tools, deals, categories
+  - User-owned data protection (profiles, votes, alerts)
+
+### Technical Notes
+- Used Suspense boundaries for pages with useSearchParams
+- Type assertions needed for Supabase query results
+- Google OAuth requires Supabase dashboard configuration
+- Magic link is the primary auth method
+
+### Environment Variables (required for Google OAuth)
+```env
+# Configure in Supabase Dashboard > Authentication > Providers
+# Google Client ID and Secret
+```
+
+**Supabase CLI Setup**
+- Linked project to Supabase Cloud (ref: jnbgkxhmpvryywftzmep)
+- Access token stored in .env.local
+- All migrations synced (5 total)
+- Can now use `supabase db push` for future migrations
+
+**Voting System**
+- `src/lib/actions/votes.ts` - Server actions (vote, getUserVote, getUserVotes)
+- `src/components/tools/VoteButton.tsx` - Upvote button with optimistic UI
+- Updated ToolCard to include VoteButton
+- Updated ToolGrid to pass user votes
+- Vote toggle behavior (click again to remove vote)
+- Redirects to login if not authenticated
+
+### Build Status
+- All routes compile successfully
+- TypeScript passes
+
+### Next Session
+- Deal alerts CRUD
+- Tool/deal submission forms
+
+---
+
 ## 2025-12-15 - Session 4: Search Implementation Complete
 
 ### Added

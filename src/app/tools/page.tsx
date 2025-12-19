@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ToolGrid } from '@/components/tools'
 import { createClient } from '@/lib/supabase/server'
-import type { Category } from '@/types'
+import { getUserVotes } from '@/lib/actions/votes'
+import type { Category, Tool } from '@/types'
 
 export const metadata: Metadata = {
   title: 'AI Tools Directory',
@@ -52,7 +53,11 @@ export default async function ToolsPage({ searchParams }: ToolsPageProps) {
   // TODO: Filter by category via tool_categories join
   // For now, we'll filter all tools
 
-  const { data: tools, count } = await toolsQuery
+  const { data: tools } = await toolsQuery as { data: Tool[] | null }
+
+  // Get user's votes for these tools
+  const toolIds = tools?.map(t => t.id) || []
+  const userVotes = await getUserVotes(toolIds)
 
   return (
     <div className="min-h-screen">
@@ -155,7 +160,7 @@ export default async function ToolsPage({ searchParams }: ToolsPageProps) {
             </div>
 
             {/* Tools Grid */}
-            <ToolGrid tools={tools || []} columns={3} />
+            <ToolGrid tools={tools || []} columns={3} userVotes={userVotes} />
 
             {/* Load More */}
             <div className="mt-8 text-center">
