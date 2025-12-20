@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { NewsletterForm } from '@/components/newsletter'
 
 const footerLinks = {
   product: [
@@ -41,20 +40,7 @@ export function Footer() {
             </p>
 
             {/* Newsletter Signup */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Get weekly deal alerts</p>
-              <form className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="max-w-[240px] bg-secondary/50 border-0"
-                />
-                <Button type="submit">Subscribe</Button>
-              </form>
-              <p className="text-xs text-muted-foreground">
-                No spam. Unsubscribe anytime.
-              </p>
-            </div>
+            <NewsletterForm />
           </div>
 
           {/* Product Links */}

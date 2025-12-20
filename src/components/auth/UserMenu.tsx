@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { User, Settings, LogOut, Bell, Send } from 'lucide-react'
+import { User, Settings, LogOut, Bell, Send, Shield } from 'lucide-react'
 import { useUser } from '@/lib/supabase/hooks'
 import { signOut } from '@/lib/supabase/actions'
 import { Button } from '@/components/ui/button'
@@ -14,9 +15,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { createClient } from '@/lib/supabase/client'
 
 export function UserMenu() {
   const { user, loading } = useUser()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    async function checkAdmin() {
+      if (!user) return
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single() as { data: { is_admin: boolean } | null }
+      setIsAdmin(data?.is_admin === true)
+    }
+    checkAdmin()
+  }, [user])
 
   if (loading) {
     return (
@@ -79,6 +96,14 @@ export function UserMenu() {
               Settings
             </Link>
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin" className="cursor-pointer">
+                <Shield className="mr-2 h-4 w-4" />
+                Admin
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
