@@ -6,9 +6,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 5 - User Features (In Progress) |
-| **Last Updated** | 2025-12-18 |
-| **Next Task** | Phase 6 - Email setup (Resend) |
+| **Current Phase** | Phase 6 - Email (Complete) |
+| **Last Updated** | 2025-12-19 |
+| **Next Task** | Phase 7 - Polish & Launch Prep |
 | **Blockers** | None |
 
 ## Quick Links
@@ -40,9 +40,9 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - **Framework**: Next.js 16 (App Router)
 - **Database**: Supabase (PostgreSQL + Auth)
 - **Styling**: Tailwind CSS 4 + shadcn/ui
-- **Search**: Meilisearch Cloud (not yet configured)
+- **Search**: Meilisearch Cloud (with Supabase fallback)
 - **Hosting**: Railway
-- **Email**: Resend + React Email (not yet configured)
+- **Email**: Resend + React Email
 - **Scraping**: Cheerio (AppSumo scraper built)
 
 ## Completed Work
@@ -135,10 +135,22 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - [x] Deal alerts (subscribe to tools/categories)
 - [x] Tool/deal submission forms
 
-### Phase 6: Email (TODO)
-- [ ] Set up Resend
-- [ ] Deal alert emails (notify when new deals match subscriptions)
-- [ ] Weekly digest newsletter
+### Phase 6: Email (COMPLETE)
+- [x] Set up Resend client with graceful degradation
+- [x] React Email templates (DealAlert, WeeklyDigest)
+- [x] Cron endpoints for sending alerts and digests
+- [x] One-click unsubscribe handler
+
+### Phase 7: Polish & Launch Prep (TODO)
+- [ ] Admin dashboard for reviewing submissions
+- [ ] Newsletter signup integration (store subscribers)
+- [ ] Additional scrapers (StackSocial, PitchGround, etc.)
+- [ ] Analytics integration (Plausible or PostHog)
+- [ ] Error monitoring (Sentry)
+- [ ] Performance optimization (image CDN, caching)
+- [ ] SEO audit and meta tag refinement
+- [ ] Submit sitemap to Google Search Console
+- [ ] Production environment variables audit
 
 ## Environment Variables
 
@@ -158,6 +170,8 @@ APPSUMO_AFFILIATE_ID=           # AppSumo partner ID
 NEXT_PUBLIC_MEILISEARCH_HOST=   # Meilisearch Cloud host
 MEILISEARCH_ADMIN_KEY=          # Meilisearch admin key (server-side)
 NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=  # Meilisearch search key (client-safe)
+RESEND_API_KEY=                 # Resend API key for emails
+FROM_EMAIL=                     # Sender address (default: SIFT <noreply@sift.tools>)
 ```
 
 ## Supabase CLI
