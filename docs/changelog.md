@@ -2,6 +2,49 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-19 - Session 9: Phase 7 - Polish & Launch Prep
+
+### Added
+
+**Newsletter Signup**
+- `src/lib/actions/newsletter.ts` - Server action for newsletter subscription
+  - Validates email, checks for duplicates
+  - Marks subscribers as verified immediately
+- `src/components/newsletter/NewsletterForm.tsx` - Client component
+  - Success/error states with visual feedback
+  - Loading state during submission
+- Wired up footer newsletter form to store in `newsletter_subscribers` table
+
+**Admin Dashboard**
+- `supabase/migrations/20241219000000_admin_policies.sql`
+  - Added `is_admin` column to profiles
+  - Created `is_admin()` helper function
+  - Admin RLS policies for viewing/updating all submissions
+  - Admin policy for viewing newsletter subscribers
+- `src/lib/actions/admin.ts` - Admin server actions
+  - `isCurrentUserAdmin()` - Check admin status
+  - `getAdminStats()` - Dashboard statistics
+  - `getPendingSubmissions()` - Pending items for review
+  - `approveToolSubmission()` / `rejectToolSubmission()`
+  - `approveDealSubmission()` / `rejectDealSubmission()`
+- `/admin` page - Admin dashboard
+  - Stats overview (pending submissions, total tools/deals, subscribers)
+  - Pending tool submissions list with approve/reject actions
+  - Pending deal submissions list with approve/reject actions
+- `src/app/admin/SubmissionActions.tsx` - Approve/reject buttons with dialog
+- Added Admin link to UserMenu (visible only to admins)
+
+### Technical Notes
+- Used type assertions (`as any`) for tables not in generated types
+- Admin check uses `is_admin` column added via migration
+- Submission approval creates actual tool/deal records automatically
+
+### Build Status
+- All 30 routes compile successfully
+- TypeScript passes
+
+---
+
 ## 2025-12-18 - Session 8: Email System (Phase 6)
 
 ### Added

@@ -6,9 +6,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Current Phase** | Phase 6 - Email (Complete) |
+| **Current Phase** | Phase 7 - Polish & Launch Prep (In Progress) |
 | **Last Updated** | 2025-12-19 |
-| **Next Task** | Phase 7 - Polish & Launch Prep |
+| **Next Task** | Make user admin, set up cron scheduling |
 | **Blockers** | None |
 
 ## Quick Links
@@ -141,9 +141,11 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - [x] Cron endpoints for sending alerts and digests
 - [x] One-click unsubscribe handler
 
-### Phase 7: Polish & Launch Prep (TODO)
-- [ ] Admin dashboard for reviewing submissions
-- [ ] Newsletter signup integration (store subscribers)
+### Phase 7: Polish & Launch Prep (IN PROGRESS)
+- [x] Admin dashboard for reviewing submissions
+- [x] Newsletter signup integration (store subscribers)
+- [ ] Make yourself admin (run SQL in Supabase dashboard)
+- [ ] Set up cron scheduling (Railway or external service)
 - [ ] Additional scrapers (StackSocial, PitchGround, etc.)
 - [ ] Analytics integration (Plausible or PostHog)
 - [ ] Error monitoring (Sentry)
