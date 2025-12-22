@@ -106,12 +106,13 @@ export function UserMenu() {
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => signOut()}
-          className="cursor-pointer text-destructive focus:text-destructive"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+        <DropdownMenuItem asChild>
+          <form action={signOut} className="w-full">
+            <button type="submit" className="flex w-full items-center cursor-pointer text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </button>
+          </form>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
