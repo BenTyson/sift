@@ -2,6 +2,49 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-22 - Session 10: Pre-Launch Fixes
+
+### Added
+
+**Legal/Company Pages**
+- `/about` - Company mission, what we do, affiliate disclosure
+- `/contact` - Contact info, common topics, partnership info
+- `/privacy` - Privacy policy
+- `/terms` - Terms of service
+- All footer links now resolve to real pages
+
+### Fixed
+
+**Auth Callback Handler**
+- Updated `/auth/callback` to handle both authentication flows:
+  - PKCE flow (OAuth, email signup) via `code` parameter
+  - Magic link / OTP flow via `token_hash` parameter
+- Magic link login now works correctly
+
+**Supabase Auth Configuration (via API)**
+- Set `site_url` to `https://sift-production.up.railway.app`
+- Set `uri_allow_list` to include `/auth/callback`
+- Email confirmation links now redirect to production URL
+
+**Railway Environment Variables**
+- Added `NEXT_PUBLIC_APP_URL=https://sift-production.up.railway.app`
+- Linked Railway CLI to Sift project
+
+### Configuration
+
+**Cron Jobs (via cron-job.org)**
+- Scrape Deals: Every 6 hours
+- Expire Deals: Daily at midnight
+- Deal Alerts: Every hour
+- Weekly Digest: Sundays 9am
+
+### Pending
+
+- Make user admin (after successful login)
+- Test full auth flow on production
+
+---
+
 ## 2025-12-19 - Session 9: Phase 7 - Polish & Launch Prep
 
 ### Added

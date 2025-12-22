@@ -7,9 +7,10 @@
 | Field | Value |
 |-------|-------|
 | **Current Phase** | Phase 7 - Polish & Launch Prep (In Progress) |
-| **Last Updated** | 2025-12-19 |
-| **Next Task** | Make user admin, set up cron scheduling |
+| **Last Updated** | 2025-12-22 |
+| **Next Task** | Test auth flow, make user admin |
 | **Blockers** | None |
+| **Production URL** | https://sift-production.up.railway.app |
 
 ## Quick Links
 
@@ -144,15 +145,17 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 ### Phase 7: Polish & Launch Prep (IN PROGRESS)
 - [x] Admin dashboard for reviewing submissions
 - [x] Newsletter signup integration (store subscribers)
-- [ ] Make yourself admin (run SQL in Supabase dashboard)
-- [ ] Set up cron scheduling (Railway or external service)
+- [x] Legal pages (/about, /contact, /privacy, /terms)
+- [x] Set up cron scheduling (cron-job.org)
+- [x] Configure Supabase auth for production URL
+- [x] Fix auth callback for magic links
+- [x] Set Railway environment variables
+- [ ] Make yourself admin (after login works)
+- [ ] Test full auth flow on production
 - [ ] Additional scrapers (StackSocial, PitchGround, etc.)
 - [ ] Analytics integration (Plausible or PostHog)
 - [ ] Error monitoring (Sentry)
-- [ ] Performance optimization (image CDN, caching)
-- [ ] SEO audit and meta tag refinement
 - [ ] Submit sitemap to Google Search Console
-- [ ] Production environment variables audit
 
 ## Environment Variables
 
