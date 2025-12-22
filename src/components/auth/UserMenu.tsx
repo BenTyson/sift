@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { User, Settings, LogOut, Bell, Send, Shield } from 'lucide-react'
 import { useUser } from '@/lib/supabase/hooks'
-import { signOut } from '@/lib/supabase/actions'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,11 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { createClient } from '@/lib/supabase/client'
 
 export function UserMenu() {
   const { user, loading } = useUser()
   const [isAdmin, setIsAdmin] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     async function checkAdmin() {
@@ -34,6 +35,13 @@ export function UserMenu() {
     }
     checkAdmin()
   }, [user])
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   if (loading) {
     return (
@@ -106,13 +114,12 @@ export function UserMenu() {
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <form action={signOut} className="w-full">
-            <button type="submit" className="flex w-full items-center cursor-pointer text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </button>
-          </form>
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="cursor-pointer text-destructive focus:text-destructive"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
