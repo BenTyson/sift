@@ -125,6 +125,8 @@ export async function signInWithGoogle(redirectTo: string = '/') {
   }
 
   if (data.url) {
-    redirect(data.url)
+    return { url: data.url }
   }
+
+  return { error: 'Failed to get OAuth URL' }
 }

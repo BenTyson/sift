@@ -36,7 +36,13 @@ export function LoginForm() {
 
   async function handleGoogleSignIn() {
     setLoading(true)
-    await signInWithGoogle(redirectTo)
+    const result = await signInWithGoogle(redirectTo)
+    if (result.error) {
+      setMessage({ type: 'error', text: result.error })
+      setLoading(false)
+    } else if (result.url) {
+      window.location.href = result.url
+    }
   }
 
   return (
