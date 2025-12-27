@@ -2,6 +2,50 @@
 
 All notable changes to SIFT are documented here.
 
+## 2025-12-27 - Session 11: Auth Fixes & Analytics
+
+### Fixed
+
+**Authentication Flow**
+- Fixed magic link redirecting to `localhost:8080` instead of production URL
+- Root cause: `NEXT_PUBLIC_*` env vars baked at build time, not runtime
+- Added `APP_URL` runtime env var for server actions
+- Updated `src/lib/supabase/actions.ts` to use `getAppUrl()` helper
+
+**Logout Button**
+- Fixed logout not working in UserMenu dropdown
+- Changed from server action `redirect()` to client-side `supabase.auth.signOut()`
+- Used `router.push()` and `router.refresh()` for navigation
+
+**Google OAuth**
+- Fixed Google sign-in redirecting to localhost
+- Changed from server action `redirect(data.url)` to returning URL
+- Client now handles redirect via `window.location.href`
+
+### Added
+
+**Analytics**
+- Integrated Plausible analytics (privacy-friendly)
+- Added to `src/app/layout.tsx` using Next.js Script component
+- Strategy: `afterInteractive` for non-blocking load
+
+**Admin**
+- Made ideaswithben@gmail.com an admin via Supabase service role
+
+### Environment Variables (Railway)
+- Added `APP_URL=https://sift-production.up.railway.app` (runtime, for server actions)
+
+### Technical Notes
+- Server actions with `redirect()` don't work well with onClick handlers
+- Use forms with `action={serverAction}` or client-side redirects instead
+- `NEXT_PUBLIC_*` vars are compile-time; use regular env vars for runtime server code
+
+### Build Status
+- All routes compile successfully
+- TypeScript passes
+
+---
+
 ## 2025-12-22 - Session 10: Pre-Launch Fixes
 
 ### Added

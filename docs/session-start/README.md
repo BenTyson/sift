@@ -7,8 +7,8 @@
 | Field | Value |
 |-------|-------|
 | **Current Phase** | Phase 7 - Polish & Launch Prep (In Progress) |
-| **Last Updated** | 2025-12-22 |
-| **Next Task** | Test auth flow, make user admin |
+| **Last Updated** | 2025-12-27 |
+| **Next Task** | Additional scrapers, submit sitemap to Google |
 | **Blockers** | None |
 | **Production URL** | https://sift-production.up.railway.app |
 
@@ -45,6 +45,7 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - **Hosting**: Railway
 - **Email**: Resend + React Email
 - **Scraping**: Cheerio (AppSumo scraper built)
+- **Analytics**: Plausible (privacy-friendly)
 
 ## Completed Work
 
@@ -150,11 +151,11 @@ AI tools directory with deal aggregation, affiliate monetization, and programmat
 - [x] Configure Supabase auth for production URL
 - [x] Fix auth callback for magic links
 - [x] Set Railway environment variables
-- [ ] Make yourself admin (after login works)
-- [ ] Test full auth flow on production
+- [x] Make yourself admin
+- [x] Test full auth flow on production (magic link + Google OAuth)
+- [x] Fix logout button (client-side signOut)
+- [x] Analytics integration (Plausible)
 - [ ] Additional scrapers (StackSocial, PitchGround, etc.)
-- [ ] Analytics integration (Plausible or PostHog)
-- [ ] Error monitoring (Sentry)
 - [ ] Submit sitemap to Google Search Console
 
 ## Environment Variables
@@ -167,7 +168,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 SUPABASE_ACCESS_TOKEN=sbp_...   # CLI access token
 ```
 
-Needed for production:
+Needed for production (configured on Railway):
 ```env
 SUPABASE_SERVICE_ROLE_KEY=     # For admin operations
 CRON_SECRET=                    # Protect cron endpoints
@@ -177,6 +178,8 @@ MEILISEARCH_ADMIN_KEY=          # Meilisearch admin key (server-side)
 NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=  # Meilisearch search key (client-safe)
 RESEND_API_KEY=                 # Resend API key for emails
 FROM_EMAIL=                     # Sender address (default: SIFT <noreply@sift.tools>)
+APP_URL=                        # Runtime URL for server actions (avoids build-time baking)
+NEXT_PUBLIC_APP_URL=            # Build-time URL for client-side
 ```
 
 ## Supabase CLI
@@ -219,6 +222,8 @@ npm run build
 5. **Affiliate-first monetization** - immediate revenue, no need for paid features initially
 6. **Cheerio over Puppeteer** where possible - faster, cheaper, less resource-intensive
 7. **Railway over Vercel** - user preference, Docker-based deployments
+8. **Plausible over PostHog** - simpler, privacy-friendly, lighter script (~1KB vs ~100KB)
+9. **Skip error monitoring for now** - use Railway logs; add Sentry later if needed
 
 ## Open Questions
 
