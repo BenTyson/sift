@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { ToolCard, VoteButton } from '@/components/tools'
 import { DealCard } from '@/components/deals'
 import { DealAlertButton } from '@/components/alerts'
+import { AffiliateLink } from '@/components/shared/AffiliateLink'
 import { createClient } from '@/lib/supabase/server'
 import { getUserVote } from '@/lib/actions/votes'
 import { getUserAlertForTool } from '@/lib/actions/alerts'
@@ -158,14 +159,13 @@ export default async function ToolPage({ params }: ToolPageProps) {
               {/* CTA Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" asChild>
-                  <a
+                  <AffiliateLink
                     href={tool.affiliate_url || tool.website_url}
-                    target="_blank"
-                    rel="noopener sponsored"
+                    toolId={tool.id}
                   >
                     Visit {tool.name}
                     <ExternalLink className="h-4 w-4 ml-2" />
-                  </a>
+                  </AffiliateLink>
                 </Button>
                 <Button size="lg" variant="outline">
                   <Share2 className="h-4 w-4 mr-2" />
@@ -275,14 +275,13 @@ export default async function ToolPage({ params }: ToolPageProps) {
                   )}
                   <Separator />
                   <Button className="w-full" asChild>
-                    <a
+                    <AffiliateLink
                       href={tool.affiliate_url || tool.website_url}
-                      target="_blank"
-                      rel="noopener sponsored"
+                      toolId={tool.id}
                     >
                       Get Started
                       <ExternalLink className="h-4 w-4 ml-2" />
-                    </a>
+                    </AffiliateLink>
                   </Button>
                 </div>
               </CardContent>
@@ -294,15 +293,14 @@ export default async function ToolPage({ params }: ToolPageProps) {
                 <CardTitle>Quick Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <a
+                <AffiliateLink
                   href={tool.website_url}
-                  target="_blank"
-                  rel="noopener"
+                  toolId={tool.id}
                   className="flex items-center justify-between text-sm hover:text-primary transition-colors"
                 >
                   <span>Official Website</span>
                   <ExternalLink className="h-4 w-4" />
-                </a>
+                </AffiliateLink>
                 <Link
                   href={`/alternatives/${tool.slug}`}
                   className="flex items-center justify-between text-sm hover:text-primary transition-colors"

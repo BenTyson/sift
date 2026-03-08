@@ -22,17 +22,14 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 
 *Nothing else matters if clicks don't track and affiliates don't pay.*
 
-### A1. Click Tracking API
-- Create `POST /api/track/click` endpoint
-- Record to `click_events` table (tool_id, deal_id, user_id, session_id, referrer, page_url, destination_url)
-- Return redirect URL (track before sending user to affiliate)
-- **Files:** New `src/app/api/track/click/route.ts`
+### A1. Click Tracking API (DONE)
+- `POST /api/track/click` endpoint records to `click_events`, calls `increment_click_count()` RPC
+- **Files:** `src/app/api/track/click/route.ts`
 
-### A2. Affiliate Link Wrapper Component
-- Create `<AffiliateLink>` component that routes all outbound clicks through `/api/track/click`
-- Replace all raw `<a href={affiliate_url}>` across: ToolCard, DealCard, tool detail page, /vs/ pages, /alternatives/ pages, /best/ pages
-- Add UTM parameters automatically (utm_source=sift, utm_medium=directory, utm_campaign={page_type})
-- **Files:** New `src/components/shared/AffiliateLink.tsx`, edit all card/page components
+### A2. Affiliate Link Wrapper Component (DONE)
+- `<AffiliateLink>` component with fire-and-forget tracking, UTM params, `keepalive: true`
+- Replaced raw `<a>` tags across DealCard, tool detail, /vs/, /alternatives/, /best/
+- **Files:** `src/components/shared/AffiliateLink.tsx`, edited 5 page/component files
 
 ### A3. Configure Affiliate IDs
 - Set `APPSUMO_AFFILIATE_ID` in Railway env vars
@@ -46,12 +43,11 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 - Test deal alert and weekly digest emails end-to-end
 - **Files:** Railway dashboard, DNS config
 
-### A5. Email Verification Flow
-- Add double opt-in for newsletter subscribers (currently auto-verified)
-- Create verification email template
-- Create `/api/verify-email?token=...` endpoint
-- Update `subscribeToNewsletter` action to set `is_verified: false` initially
-- **Files:** New email template, new API route, edit `src/lib/actions/newsletter.ts`
+### A5. Email Verification Flow (DONE)
+- Double opt-in: subscribers start unverified, get verification email, click to confirm
+- `GET /api/verify-email?token=...` verifies and redirects to homepage
+- Re-subscribe resends verification email
+- **Files:** `src/lib/email/templates/VerifyEmail.tsx`, `src/app/api/verify-email/route.ts`, edited `newsletter.ts` + `send.ts`
 
 ---
 
@@ -178,9 +174,9 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 | Session | Tasks | Phase |
 |---------|-------|-------|
 | 0 | Documentation overhaul | 0 (DONE) |
-| 1-2 | Click tracking + AffiliateLink component | A1, A2 |
-| 3 | Affiliate IDs + Resend config | A3, A4 |
-| 4 | Email verification flow | A5 |
+| 1-2 | Click tracking + AffiliateLink component | A1, A2 (DONE) |
+| 3 | Affiliate IDs + Resend config | A3, A4 (Ben action items) |
+| 4 | Email verification flow | A5 (DONE) |
 | 5-6 | AI tool importer + first batch | B1 |
 | 7 | Additional scrapers | B3 |
 | 8 | Tool matching + auto-categorization | B2, B4 |

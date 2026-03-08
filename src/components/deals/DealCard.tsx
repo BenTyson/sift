@@ -5,6 +5,7 @@ import { ExternalLink, Clock, Tag } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AffiliateLink } from '@/components/shared/AffiliateLink'
 import { cn } from '@/lib/utils'
 import type { Deal, Tool } from '@/types'
 
@@ -211,14 +212,14 @@ export function DealCard({
             size="sm"
             className="ml-auto border-2 border-foreground/70 text-foreground bg-transparent hover:bg-foreground/10"
           >
-            <a
+            <AffiliateLink
               href={deal.affiliate_url || deal.source_url || '#'}
-              target="_blank"
-              rel="noopener sponsored"
+              dealId={deal.id}
+              toolId={deal.tool_id || undefined}
             >
               Get Deal
               <ExternalLink className="h-3 w-3 ml-1" />
-            </a>
+            </AffiliateLink>
           </Button>
         </div>
       </CardContent>

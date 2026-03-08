@@ -1,6 +1,7 @@
 import { resend, FROM_EMAIL, isEmailConfigured } from './client'
 import { DealAlertEmail } from './templates/DealAlert'
 import { WeeklyDigestEmail } from './templates/WeeklyDigest'
+import { VerifyEmail } from './templates/VerifyEmail'
 
 interface SendDealAlertParams {
   to: string
@@ -73,6 +74,35 @@ export async function sendDealAlertEmail(params: SendDealAlertParams) {
     return { success: true, id: data?.id }
   } catch (error) {
     console.error('Exception sending deal alert email:', error)
+    return { success: false, error: 'Failed to send email' }
+  }
+}
+
+export async function sendVerificationEmail(to: string, verificationToken: string) {
+  if (!isEmailConfigured() || !resend) {
+    console.log('Email not configured, skipping verification email')
+    return { success: false, error: 'Email not configured' }
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sift.tools'
+  const verifyUrl = `${appUrl}/api/verify-email?token=${verificationToken}`
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: 'Confirm your SIFT newsletter subscription',
+      react: VerifyEmail({ verifyUrl }),
+    })
+
+    if (error) {
+      console.error('Error sending verification email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, id: data?.id }
+  } catch (error) {
+    console.error('Exception sending verification email:', error)
     return { success: false, error: 'Failed to send email' }
   }
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DealAlertButton } from '@/components/alerts'
+import { AffiliateLink } from '@/components/shared/AffiliateLink'
 import { createClient } from '@/lib/supabase/server'
 import { getUserAlertForCategory } from '@/lib/actions/alerts'
 import type { Tool, Category } from '@/types'
@@ -223,14 +224,13 @@ export default async function BestCategoryPage({ params }: BestCategoryPageProps
                   </div>
                   <div className="pt-2 space-y-2">
                     <Button asChild className="w-full">
-                      <a
+                      <AffiliateLink
                         href={tool.affiliate_url || tool.website_url}
-                        target="_blank"
-                        rel="noopener sponsored"
+                        toolId={tool.id}
                       >
                         Try {tool.name}
                         <ExternalLink className="h-4 w-4 ml-1" />
-                      </a>
+                      </AffiliateLink>
                     </Button>
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/tools/${tool.slug}`}>
@@ -312,14 +312,13 @@ export default async function BestCategoryPage({ params }: BestCategoryPageProps
                                 </Link>
                               </Button>
                               <Button size="sm" asChild>
-                                <a
+                                <AffiliateLink
                                   href={tool.affiliate_url || tool.website_url}
-                                  target="_blank"
-                                  rel="noopener sponsored"
+                                  toolId={tool.id}
                                 >
                                   Visit
                                   <ExternalLink className="h-3 w-3 ml-1" />
-                                </a>
+                                </AffiliateLink>
                               </Button>
                             </div>
                           </div>

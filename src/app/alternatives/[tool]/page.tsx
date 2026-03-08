@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ToolCard } from '@/components/tools'
+import { AffiliateLink } from '@/components/shared/AffiliateLink'
 import { createClient } from '@/lib/supabase/server'
 import type { Tool, Category } from '@/types'
 
@@ -231,14 +232,13 @@ export default async function AlternativesPage({ params }: AlternativesPageProps
                 </div>
                 <div className="flex flex-col gap-2 md:w-48">
                   <Button asChild>
-                    <a
+                    <AffiliateLink
                       href={rankedAlternatives[0].affiliate_url || rankedAlternatives[0].website_url}
-                      target="_blank"
-                      rel="noopener sponsored"
+                      toolId={rankedAlternatives[0].id}
                     >
                       Try {rankedAlternatives[0].name}
                       <ExternalLink className="h-4 w-4 ml-1" />
-                    </a>
+                    </AffiliateLink>
                   </Button>
                   <Button variant="outline" asChild>
                     <Link href={`/vs/${tool.slug}-vs-${rankedAlternatives[0].slug}`}>
@@ -302,14 +302,13 @@ export default async function AlternativesPage({ params }: AlternativesPageProps
                                 </Link>
                               </Button>
                               <Button size="sm" asChild>
-                                <a
+                                <AffiliateLink
                                   href={alt.affiliate_url || alt.website_url}
-                                  target="_blank"
-                                  rel="noopener sponsored"
+                                  toolId={alt.id}
                                 >
                                   Visit
                                   <ExternalLink className="h-3 w-3 ml-1" />
-                                </a>
+                                </AffiliateLink>
                               </Button>
                             </div>
                           </div>

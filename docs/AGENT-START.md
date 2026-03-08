@@ -26,12 +26,14 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 - Plausible analytics integrated
 
 ### What Doesn't Work (Critical Gaps)
-- **Zero click tracking** - `click_events` table exists, no API endpoint or frontend integration
-- **No affiliate IDs** - `APPSUMO_AFFILIATE_ID` env var not set, making $0
-- **Email not sending** - Resend not configured in production
-- **Newsletter auto-verifies** - no double opt-in
+- **No affiliate IDs** - `APPSUMO_AFFILIATE_ID` env var not set, making $0 (Ben action item)
+- **Email not sending** - Resend not configured in production (Ben action item)
 - **Only 31 tools** - need 200+ for credibility
 - **Only 1 scraper** - AppSumo only; StackSocial/PitchGround not built
+
+### Recently Completed
+- **Click tracking** - `POST /api/track/click` + `<AffiliateLink>` component across all pages (A1, A2)
+- **Email verification** - Double opt-in flow with `GET /api/verify-email?token=...` (A5)
 
 ## Tech Stack (Locked - Do Not Change)
 
@@ -51,7 +53,7 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 | Area | Path |
 |------|------|
 | Pages | `src/app/` (tools, deals, vs, alternatives, best, admin, profile, submit, about, contact, privacy, terms) |
-| Components | `src/components/` (alerts, auth, deals, layout, newsletter, search, tools, ui) |
+| Components | `src/components/` (alerts, auth, deals, layout, newsletter, search, shared, tools, ui) |
 | Server actions | `src/lib/actions/` (admin, alerts, newsletter, submissions, votes) |
 | Supabase clients | `src/lib/supabase/` (server.ts, client.ts, actions.ts, middleware.ts, hooks.ts) |
 | Scrapers | `src/lib/scrapers/` (appsumo.ts, orchestrator.ts, types.ts) |
@@ -60,7 +62,7 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 | Types | `src/types/` (database.ts, index.ts) |
 | Styles | `src/app/globals.css` (OKLch aqua palette, dark default) |
 | Migrations | `supabase/migrations/` (7 files) |
-| Cron endpoints | `src/app/api/cron/` (scrape-deals, expire-deals, send-deal-alerts, send-weekly-digest) |
+| API endpoints | `src/app/api/` (track/click, verify-email, unsubscribe, search, cron/*) |
 
 ## Key Patterns
 

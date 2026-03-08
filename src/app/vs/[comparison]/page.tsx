@@ -5,6 +5,7 @@ import { Check, X, Minus, ExternalLink, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { AffiliateLink } from '@/components/shared/AffiliateLink'
 import { createClient } from '@/lib/supabase/server'
 import type { Tool } from '@/types'
 
@@ -197,14 +198,13 @@ export default async function ComparisonPage({ params }: ComparisonPageProps) {
                 {/* CTA */}
                 <div className="pt-4 space-y-2">
                   <Button asChild className="w-full">
-                    <a
+                    <AffiliateLink
                       href={tool.affiliate_url || tool.website_url}
-                      target="_blank"
-                      rel="noopener sponsored"
+                      toolId={tool.id}
                     >
                       Try {tool.name}
                       <ExternalLink className="h-4 w-4 ml-2" />
-                    </a>
+                    </AffiliateLink>
                   </Button>
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/tools/${tool.slug}`}>

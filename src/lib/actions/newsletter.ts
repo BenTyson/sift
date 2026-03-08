@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { sendVerificationEmail } from '@/lib/email/send'
 
 interface SubscribeResult {
   success: boolean
@@ -19,7 +20,7 @@ export async function subscribeToNewsletter(email: string): Promise<SubscribeRes
   // Note: newsletter_subscribers not in generated types, using any
   const { data: existing } = await (supabase
     .from('newsletter_subscribers') as any)
-    .select('id, is_verified')
+    .select('id, is_verified, verification_token')
     .eq('email', email.toLowerCase())
     .single()
 
@@ -27,21 +28,27 @@ export async function subscribeToNewsletter(email: string): Promise<SubscribeRes
     if (existing.is_verified) {
       return { success: false, error: 'This email is already subscribed' }
     } else {
-      // Resend verification (for now, just mark as verified since we don't have email verification flow)
-      await (supabase
-        .from('newsletter_subscribers') as any)
-        .update({ is_verified: true })
-        .eq('id', existing.id)
-      return { success: true, message: 'Welcome back! Your subscription is now active.' }
+      // Resend verification email with existing or new token
+      const token = existing.verification_token || crypto.randomUUID()
+      if (!existing.verification_token) {
+        await (supabase
+          .from('newsletter_subscribers') as any)
+          .update({ verification_token: token })
+          .eq('id', existing.id)
+      }
+      await sendVerificationEmail(email.toLowerCase(), token)
+      return { success: true, message: 'Check your email to confirm your subscription.' }
     }
   }
 
-  // Create new subscriber (mark as verified immediately for now)
+  const verificationToken = crypto.randomUUID()
+
   const { error } = await (supabase
     .from('newsletter_subscribers') as any)
     .insert({
       email: email.toLowerCase(),
-      is_verified: true,
+      is_verified: false,
+      verification_token: verificationToken,
       digest_frequency: 'weekly',
     })
 
@@ -50,5 +57,7 @@ export async function subscribeToNewsletter(email: string): Promise<SubscribeRes
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
 
-  return { success: true, message: 'You\'re subscribed! Watch for weekly deal alerts.' }
+  await sendVerificationEmail(email.toLowerCase(), verificationToken)
+
+  return { success: true, message: 'Check your email to confirm your subscription.' }
 }
