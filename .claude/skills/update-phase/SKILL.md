@@ -40,17 +40,26 @@ Read the auto-memory file at the path shown in the system context and update:
 - Add any new patterns, gotchas, or conventions discovered during the session.
 - Keep it concise. Don't duplicate what's already in AGENT-START.md.
 
-## 5. Archive Session Bloat (if needed)
+## 5. Update docs/ben.md
+
+Read `docs/ben.md` and update:
+
+- **Add** any new manual action items discovered this session (env vars to set, accounts to create, DNS changes, dashboard configs, etc.) under the appropriate phase section.
+- **Check off** (`[x]`) any items that are now confirmed done (only if you have evidence from the session).
+- **Archive** completed sections: if every item in a section is done, move the section to the bottom under an `## Archived (Done)` heading so the active list stays focused.
+- Keep the file organized by roadmap phase. Create new phase sections as needed.
+
+## 6. Archive Session Bloat (if needed)
 
 Check if any docs files have grown excessively (>150 lines) or contain session-specific details that don't belong in permanent docs. If so:
 
 - Extract the bloat to `docs/archive/` with a descriptive filename.
 - Keep the main doc concise with a link to the archive.
 
-## 6. Verify
+## 7. Verify
 
 - Confirm `docs/AGENT-START.md` is under 100 lines.
-- Confirm all three docs are internally consistent (no contradictions between AGENT-START, roadmap, and MEMORY).
+- Confirm all docs are internally consistent (no contradictions between AGENT-START, roadmap, ben.md, and MEMORY).
 - Report a summary of what was updated.
 
 Do NOT commit. Just update the files and report what changed.
