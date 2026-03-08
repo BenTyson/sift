@@ -1,381 +1,275 @@
 # Database Schema
 
-## Overview
-
-Supabase PostgreSQL database with Row Level Security (RLS) policies.
+Supabase PostgreSQL with Row Level Security (RLS).
 
 ## Entity Relationship Diagram
 
 ```
-┌─────────────┐       ┌─────────────────┐       ┌─────────────┐
-│ categories  │◄──────│ tool_categories │──────►│    tools    │
-└─────────────┘       └─────────────────┘       └──────┬──────┘
-      │                                                 │
-      │ (self-ref)                                     │
-      ▼                                                ▼
-┌─────────────┐                               ┌─────────────┐
-│  (parent)   │                               │    deals    │
-└─────────────┘                               └─────────────┘
-                                                      │
-                                                      ▼
-┌─────────────┐       ┌─────────────────┐       ┌─────────────┐
-│   profiles  │◄──────│     votes       │       │ deal_alerts │
-└─────────────┘       └─────────────────┘       └─────────────┘
-      │
-      ▼
-┌─────────────────────┐
-│newsletter_subscribers│
-└─────────────────────┘
+                    ┌─────────────────┐
+┌─────────────┐     │ tool_categories │     ┌─────────────┐
+│ categories  │<----│  (junction)     │---->│    tools     │
+└──────┬──────┘     └─────────────────┘     └──────┬──────┘
+       │ (parent)                                   │
+       └──> self                                    │
+                                                    ├──> deals
+                                                    ├──> click_events
+                                                    └──> votes
+
+┌─────────────┐     ┌─────────────────┐
+│  profiles   │<----│     votes       │
+│ (is_admin)  │     └─────────────────┘
+└──────┬──────┘
+       ├──> deal_alerts
+       ├──> tool_submissions
+       └──> deal_submissions
+
+┌──────────────────────┐
+│ newsletter_subscribers│
+└──────────────────────┘
 ```
 
 ## Tables
 
 ### categories
+Hierarchical tool categories (15 seeded).
 
-Hierarchical tool categories.
-
-```sql
-CREATE TABLE categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  icon TEXT,                -- Lucide icon name (e.g., 'pen-tool')
-  parent_id UUID REFERENCES categories(id),
-  display_order INT DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX idx_categories_slug ON categories(slug);
-CREATE INDEX idx_categories_parent ON categories(parent_id);
-```
-
-**Initial Categories:**
-- Writing
-- Image Generation
-- Video
-- Audio
-- Coding
-- Productivity
-- Marketing
-- Sales
-- Customer Support
-- Research
-- Data
-- Design
-- Social Media
-- SEO
-- Automation
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| slug | TEXT | UNIQUE, NOT NULL |
+| name | TEXT | NOT NULL |
+| description | TEXT | |
+| icon | TEXT | Lucide icon name |
+| parent_id | UUID | FK -> categories(id) |
+| display_order | INT | Default 0 |
+| created_at | TIMESTAMPTZ | |
 
 ### tools
+Core entity - AI tools with affiliate links (31 seeded).
 
-Core entity - AI tools with affiliate links.
-
-```sql
-CREATE TABLE tools (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  tagline TEXT,                          -- One-liner (max 100 chars)
-  description TEXT,                      -- Full description (markdown)
-
-  -- Media
-  logo_url TEXT,
-  screenshot_url TEXT,
-
-  -- Links
-  website_url TEXT NOT NULL,
-  affiliate_url TEXT,                    -- Primary monetization
-  affiliate_program TEXT,                -- e.g., 'impact', 'partnerstack'
-
-  -- Pricing
-  pricing_model TEXT CHECK (pricing_model IN ('free', 'freemium', 'paid', 'enterprise', 'open_source')),
-  pricing_details JSONB,                 -- {free_tier: true, starting_price: 9, currency: 'USD'}
-
-  -- Features
-  features TEXT[],                       -- Array of feature strings
-  use_cases TEXT[],
-  integrations TEXT[],
-
-  -- SEO
-  meta_title TEXT,
-  meta_description TEXT,
-
-  -- Status
-  is_featured BOOLEAN DEFAULT false,
-  is_verified BOOLEAN DEFAULT false,
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'pending', 'archived')),
-
-  -- Stats (denormalized for performance)
-  upvotes INT DEFAULT 0,
-  view_count INT DEFAULT 0,
-  click_count INT DEFAULT 0,
-
-  -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX idx_tools_slug ON tools(slug);
-CREATE INDEX idx_tools_status ON tools(status);
-CREATE INDEX idx_tools_featured ON tools(is_featured) WHERE is_featured = true;
-CREATE INDEX idx_tools_pricing ON tools(pricing_model);
-CREATE INDEX idx_tools_upvotes ON tools(upvotes DESC);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| slug | TEXT | UNIQUE, NOT NULL |
+| name | TEXT | NOT NULL |
+| tagline | TEXT | Max ~100 chars |
+| description | TEXT | Markdown |
+| logo_url | TEXT | |
+| screenshot_url | TEXT | |
+| website_url | TEXT | NOT NULL |
+| affiliate_url | TEXT | Primary monetization |
+| affiliate_program | TEXT | e.g., 'impact', 'partnerstack' |
+| pricing_model | TEXT | CHECK: free, freemium, paid, enterprise, open_source |
+| pricing_details | JSONB | {free_tier, starting_price, currency} |
+| features | TEXT[] | |
+| use_cases | TEXT[] | |
+| integrations | TEXT[] | |
+| meta_title | TEXT | |
+| meta_description | TEXT | |
+| is_featured | BOOLEAN | Default false |
+| is_verified | BOOLEAN | Default false |
+| status | TEXT | CHECK: active, pending, archived |
+| upvotes | INT | Denormalized, updated by trigger |
+| view_count | INT | Default 0 |
+| click_count | INT | Default 0 |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
 ### tool_categories
+Many-to-many junction (31 rows seeded).
 
-Many-to-many relationship between tools and categories.
-
-```sql
-CREATE TABLE tool_categories (
-  tool_id UUID REFERENCES tools(id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
-  is_primary BOOLEAN DEFAULT false,
-  PRIMARY KEY (tool_id, category_id)
-);
-
-CREATE INDEX idx_tool_categories_category ON tool_categories(category_id);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| tool_id | UUID | PK, FK -> tools(id) CASCADE |
+| category_id | UUID | PK, FK -> categories(id) CASCADE |
+| is_primary | BOOLEAN | Default false |
 
 ### deals
+Scraped and user-submitted deals (14 seeded).
 
-Scraped and user-submitted deals.
-
-```sql
-CREATE TABLE deals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tool_id UUID REFERENCES tools(id) ON DELETE SET NULL,
-
-  -- Source tracking
-  source TEXT NOT NULL,                  -- 'appsumo', 'stacksocial', 'direct', 'user'
-  source_url TEXT,
-  source_id TEXT,                        -- External ID for deduplication
-
-  -- Deal info
-  deal_type TEXT CHECK (deal_type IN ('ltd', 'discount', 'coupon', 'trial', 'free')),
-  title TEXT NOT NULL,
-  description TEXT,
-
-  -- Pricing
-  original_price DECIMAL(10,2),
-  deal_price DECIMAL(10,2),
-  discount_percent INT,
-  currency TEXT DEFAULT 'USD',
-  coupon_code TEXT,
-
-  -- Validity
-  starts_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  is_active BOOLEAN DEFAULT true,
-
-  -- Affiliate
-  affiliate_url TEXT,
-
-  -- Community
-  submitted_by UUID REFERENCES auth.users(id),
-  is_verified BOOLEAN DEFAULT false,
-  upvotes INT DEFAULT 0,
-
-  -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-
-  -- Prevent duplicate scrapes
-  UNIQUE(source, source_id)
-);
-
-CREATE INDEX idx_deals_active ON deals(is_active) WHERE is_active = true;
-CREATE INDEX idx_deals_tool ON deals(tool_id);
-CREATE INDEX idx_deals_expires ON deals(expires_at);
-CREATE INDEX idx_deals_source ON deals(source);
-CREATE INDEX idx_deals_type ON deals(deal_type);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| tool_id | UUID | FK -> tools(id) SET NULL |
+| source | TEXT | NOT NULL: appsumo, stacksocial, direct, user |
+| source_url | TEXT | |
+| source_id | TEXT | External ID for dedup |
+| deal_type | TEXT | CHECK: ltd, discount, coupon, trial, free |
+| title | TEXT | NOT NULL |
+| description | TEXT | |
+| original_price | DECIMAL(10,2) | |
+| deal_price | DECIMAL(10,2) | |
+| discount_percent | INT | |
+| currency | TEXT | Default USD |
+| coupon_code | TEXT | |
+| starts_at | TIMESTAMPTZ | |
+| expires_at | TIMESTAMPTZ | |
+| is_active | BOOLEAN | Default true |
+| affiliate_url | TEXT | |
+| submitted_by | UUID | FK -> auth.users(id) |
+| is_verified | BOOLEAN | Default false |
+| upvotes | INT | Default 0 |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+| | | UNIQUE(source, source_id) |
 
 ### profiles
+User profiles (extends auth.users).
 
-User profiles (extends Supabase auth.users).
-
-```sql
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  username TEXT UNIQUE,
-  avatar_url TEXT,
-  interests TEXT[],                      -- Category slugs
-  alert_preferences JSONB DEFAULT '{"deals": true, "digest": "weekly"}',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK, FK -> auth.users(id) CASCADE |
+| username | TEXT | UNIQUE |
+| avatar_url | TEXT | |
+| interests | TEXT[] | Category slugs |
+| alert_preferences | JSONB | Default: {deals: true, digest: "weekly"} |
+| is_admin | BOOLEAN | Default false (added in migration 7) |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
 ### votes
-
 Tool upvotes by users.
 
-```sql
-CREATE TABLE votes (
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  tool_id UUID REFERENCES tools(id) ON DELETE CASCADE,
-  value INT CHECK (value IN (-1, 1)),    -- Future: allow downvotes
-  created_at TIMESTAMPTZ DEFAULT now(),
-  PRIMARY KEY (user_id, tool_id)
-);
-
-CREATE INDEX idx_votes_tool ON votes(tool_id);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| user_id | UUID | PK, FK -> auth.users(id) CASCADE |
+| tool_id | UUID | PK, FK -> tools(id) CASCADE |
+| value | INT | CHECK: -1 or 1 |
+| created_at | TIMESTAMPTZ | |
 
 ### deal_alerts
-
 User subscriptions to deal notifications.
 
-```sql
-CREATE TABLE deal_alerts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  tool_id UUID REFERENCES tools(id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
-  min_discount INT,                      -- Minimum % to trigger
-  created_at TIMESTAMPTZ DEFAULT now(),
-  CHECK (tool_id IS NOT NULL OR category_id IS NOT NULL)
-);
-
-CREATE INDEX idx_deal_alerts_user ON deal_alerts(user_id);
-CREATE INDEX idx_deal_alerts_tool ON deal_alerts(tool_id);
-CREATE INDEX idx_deal_alerts_category ON deal_alerts(category_id);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| user_id | UUID | FK -> auth.users(id) CASCADE |
+| tool_id | UUID | FK -> tools(id) CASCADE |
+| category_id | UUID | FK -> categories(id) CASCADE |
+| min_discount | INT | Minimum % to trigger |
+| created_at | TIMESTAMPTZ | |
+| | | CHECK: tool_id OR category_id must be set |
 
 ### newsletter_subscribers
-
 Non-authenticated newsletter signups.
 
-```sql
-CREATE TABLE newsletter_subscribers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT UNIQUE NOT NULL,
-  interests TEXT[],                      -- Category slugs
-  digest_frequency TEXT DEFAULT 'weekly' CHECK (digest_frequency IN ('daily', 'weekly', 'never')),
-  is_verified BOOLEAN DEFAULT false,
-  verification_token TEXT,
-  unsubscribe_token TEXT DEFAULT gen_random_uuid()::TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX idx_newsletter_email ON newsletter_subscribers(email);
-CREATE INDEX idx_newsletter_verified ON newsletter_subscribers(is_verified) WHERE is_verified = true;
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| email | TEXT | UNIQUE, NOT NULL |
+| interests | TEXT[] | Category slugs |
+| digest_frequency | TEXT | CHECK: daily, weekly, never |
+| is_verified | BOOLEAN | Default false |
+| verification_token | TEXT | |
+| unsubscribe_token | TEXT | Auto-generated UUID |
+| created_at | TIMESTAMPTZ | |
 
 ### click_events
+Affiliate click tracking (table exists, no API endpoint yet).
 
-Affiliate click tracking for analytics.
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| tool_id | UUID | FK -> tools(id) |
+| deal_id | UUID | FK -> deals(id) |
+| user_id | UUID | FK -> auth.users(id) |
+| session_id | TEXT | Anonymous tracking |
+| referrer | TEXT | |
+| page_url | TEXT | |
+| destination_url | TEXT | |
+| created_at | TIMESTAMPTZ | |
 
-```sql
-CREATE TABLE click_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tool_id UUID REFERENCES tools(id),
-  deal_id UUID REFERENCES deals(id),
-  user_id UUID REFERENCES auth.users(id),
-  session_id TEXT,                       -- Anonymous tracking
-  referrer TEXT,
-  page_url TEXT,
-  destination_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+### tool_submissions
+User-submitted tools awaiting review.
 
-CREATE INDEX idx_clicks_tool ON click_events(tool_id);
-CREATE INDEX idx_clicks_deal ON click_events(deal_id);
-CREATE INDEX idx_clicks_date ON click_events(created_at);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| submitted_by | UUID | NOT NULL, FK -> auth.users(id) CASCADE |
+| name | TEXT | NOT NULL |
+| tagline | TEXT | NOT NULL |
+| description | TEXT | NOT NULL |
+| website_url | TEXT | NOT NULL |
+| logo_url | TEXT | |
+| pricing_model | TEXT | CHECK: free, freemium, paid, enterprise, open_source |
+| features | TEXT[] | Default {} |
+| category_ids | UUID[] | Default {} |
+| status | TEXT | CHECK: pending, approved, rejected |
+| reviewer_notes | TEXT | |
+| reviewed_at | TIMESTAMPTZ | |
+| reviewed_by | UUID | |
+| approved_tool_id | UUID | FK -> tools(id) SET NULL |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
-## Row Level Security (RLS)
+### deal_submissions
+User-submitted deals awaiting review.
 
-### Public Read Access
-
-```sql
--- Categories, tools, deals are publicly readable
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Categories are viewable by everyone" ON categories FOR SELECT USING (true);
-
-ALTER TABLE tools ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Active tools are viewable by everyone" ON tools FOR SELECT USING (status = 'active');
-
-ALTER TABLE deals ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Active deals are viewable by everyone" ON deals FOR SELECT USING (is_active = true);
-```
-
-### User-Specific Access
-
-```sql
--- Profiles: users can read all, update own
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-
--- Votes: users can manage their own votes
-ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Votes are viewable by everyone" ON votes FOR SELECT USING (true);
-CREATE POLICY "Users can insert own votes" ON votes FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own votes" ON votes FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete own votes" ON votes FOR DELETE USING (auth.uid() = user_id);
-
--- Deal alerts: users can manage their own
-ALTER TABLE deal_alerts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view own alerts" ON deal_alerts FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can create own alerts" ON deal_alerts FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can delete own alerts" ON deal_alerts FOR DELETE USING (auth.uid() = user_id);
-```
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| submitted_by | UUID | NOT NULL, FK -> auth.users(id) CASCADE |
+| tool_id | UUID | FK -> tools(id) CASCADE |
+| tool_name | TEXT | For new tools not in system |
+| tool_url | TEXT | For new tools not in system |
+| deal_type | TEXT | CHECK: ltd, discount, coupon, trial, free |
+| title | TEXT | NOT NULL |
+| description | TEXT | |
+| original_price | DECIMAL(10,2) | |
+| deal_price | DECIMAL(10,2) | |
+| discount_percent | INT | |
+| coupon_code | TEXT | |
+| deal_url | TEXT | NOT NULL |
+| expires_at | TIMESTAMPTZ | |
+| status | TEXT | CHECK: pending, approved, rejected |
+| reviewer_notes | TEXT | |
+| reviewed_at | TIMESTAMPTZ | |
+| reviewed_by | UUID | |
+| approved_deal_id | UUID | FK -> deals(id) SET NULL |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
 
 ## Functions
 
-### update_tool_upvotes
+| Function | Purpose |
+|----------|---------|
+| `handle_new_user()` | Trigger: auto-creates profile on auth.users insert |
+| `update_tool_upvotes()` | Trigger: syncs denormalized upvote count on vote change |
+| `increment_click_count(tool_uuid)` | Atomically increments click_count on tools |
+| `update_updated_at()` | Trigger: sets updated_at on row update |
+| `is_admin()` | Returns true if current user has is_admin=true |
 
-Trigger to update denormalized upvote count.
+## RLS Summary
 
-```sql
-CREATE OR REPLACE FUNCTION update_tool_upvotes()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    UPDATE tools SET upvotes = (
-      SELECT COALESCE(SUM(value), 0) FROM votes WHERE tool_id = NEW.tool_id
-    ) WHERE id = NEW.tool_id;
-  END IF;
+| Table | Public Read | User Write | Admin |
+|-------|------------|------------|-------|
+| tools | Yes (all) | No | Service role |
+| deals | Yes (all) | No | Service role |
+| categories | Yes (all) | No | Service role |
+| tool_categories | Yes (all) | No | Service role |
+| profiles | Yes (all) | Own only | - |
+| votes | Yes (all) | Own only | - |
+| deal_alerts | Own only | Own only | - |
+| click_events | Service role | Anyone (insert) | - |
+| newsletter_subscribers | Admin/service | Anyone (insert) | Yes |
+| tool_submissions | Own + admin | Own (pending) | Yes |
+| deal_submissions | Own + admin | Own (pending) | Yes |
 
-  IF TG_OP = 'DELETE' THEN
-    UPDATE tools SET upvotes = (
-      SELECT COALESCE(SUM(value), 0) FROM votes WHERE tool_id = OLD.tool_id
-    ) WHERE id = OLD.tool_id;
-  END IF;
-
-  RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER on_vote_change
-AFTER INSERT OR UPDATE OR DELETE ON votes
-FOR EACH ROW EXECUTE FUNCTION update_tool_upvotes();
-```
-
-### increment_click_count
-
-Function to atomically increment click count.
-
-```sql
-CREATE OR REPLACE FUNCTION increment_click_count(tool_uuid UUID)
-RETURNS void AS $$
-BEGIN
-  UPDATE tools SET click_count = click_count + 1 WHERE id = tool_uuid;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-## Migration Files
-
-Migrations are stored in `/supabase/migrations/` with timestamp prefixes:
+## Migrations
 
 ```
 supabase/migrations/
-├── 20241213000000_initial_schema.sql
-├── 20241213000001_rls_policies.sql
-├── 20241213000002_functions.sql
-└── 20241213000003_seed_categories.sql
+├── 20241213000000_initial_schema.sql      # Tables: tools, deals, categories, tool_categories, profiles, votes, deal_alerts, newsletter_subscribers, click_events
+├── 20241213000001_seed_categories.sql     # 15 categories
+├── 20241213000002_seed_tools.sql          # 31 AI tools
+├── 20241213000003_seed_deals.sql          # 14 sample deals
+├── 20241215000000_auth_rls_policies.sql   # RLS policies, handle_new_user trigger
+├── 20241217000000_tool_submissions.sql    # tool_submissions + deal_submissions tables
+└── 20241219000000_admin_policies.sql      # is_admin column, is_admin() function, admin policies
+```
+
+## Regenerating Types
+
+```bash
+supabase gen types typescript --linked > src/types/database.ts
 ```

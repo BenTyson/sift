@@ -1,4 +1,6 @@
-# SIFT - Session Start Document
+# SIFT - Original Planning Document (HISTORICAL)
+
+> **ARCHIVED** - This is the pre-build planning doc from Dec 2025. Contains outdated info (wrong stack, wrong tool counts). Kept for reference only. See `docs/AGENT-START.md` for current state.
 
 > **Last Updated**: 2025-12-13
 > **Current Phase**: Queued (After Calcverse)

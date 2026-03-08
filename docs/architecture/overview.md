@@ -1,10 +1,10 @@
 # Architecture Overview
 
-## System Architecture
+## System Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         RAILWAY                                  │
+│                          RAILWAY                                │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    Next.js 16 App                        │    │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐ │    │
@@ -15,204 +15,108 @@
 └──────────┼─────────────┼─────────────┼─────────────┼────────────┘
            │             │             │             │
            ▼             ▼             ▼             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        SUPABASE                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  PostgreSQL  │  │     Auth     │  │   Storage    │          │
-│  │   Database   │  │  (Magic Link)│  │   (Logos)    │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      MEILISEARCH CLOUD                           │
-│  ┌──────────────┐  ┌──────────────┐                             │
-│  │ Tools Index  │  │ Deals Index  │                             │
-│  └──────────────┘  └──────────────┘                             │
-└─────────────────────────────────────────────────────────────────┘
-           │
-           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                         RESEND                                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Transactional│  │  Deal Alerts │  │Weekly Digest │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────┐  ┌───────────────────┐  ┌──────────────────┐
+│     SUPABASE      │  │ MEILISEARCH CLOUD │  │      RESEND      │
+│ PostgreSQL + Auth │  │ Tools + Deals idx │  │ DealAlert,Digest │
+└───────────────────┘  └───────────────────┘  └──────────────────┘
+                                               (not yet configured)
+External: cron-job.org (scheduling), Plausible (analytics)
 ```
 
-## Tech Stack Decisions
+## Tech Stack
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
+| Layer | Choice | Why |
+|-------|--------|-----|
 | Framework | Next.js 16 (App Router) | SSR for SEO, server components, API routes |
-| Database | Supabase | PostgreSQL + Auth + Realtime, generous free tier |
-| Styling | Tailwind CSS 4 + shadcn/ui | Rapid development, fully customizable |
-| Search | Meilisearch Cloud | Fast, typo-tolerant, easy setup |
-| Hosting | Railway | Docker-based, full Node.js support |
-| Email | Resend | Developer-friendly, React Email templates |
-| Scraping | Cheerio | Fast HTML parsing for deal scraping |
-
-## Current Implementation Status
-
-### Implemented
-- [x] Next.js 16 with App Router
-- [x] Supabase PostgreSQL database
-- [x] Supabase client utilities (server, client, middleware)
-- [x] Tailwind CSS 4 + shadcn/ui components
-- [x] Dark theme with aqua monochromatic palette
-- [x] Homepage, Tools directory, Tool detail pages
-- [x] Deals page with filters
-- [x] AppSumo scraper with Cheerio
-- [x] Cron endpoints for deal scraping/expiration
-- [x] Meilisearch search with Supabase fallback
-- [x] Supabase Auth (magic link + Google OAuth)
-- [x] Voting system
-- [x] SEO pages (/vs/, /alternatives/, /best/)
-- [x] Dynamic sitemap generation
-- [x] Deal alerts system
-- [x] Tool/deal submission system
-- [x] Resend email (deal alerts, weekly digest)
+| Database | Supabase | PostgreSQL + Auth + RLS, generous free tier |
+| Styling | Tailwind CSS 4 + shadcn/ui | Rapid dev, fully customizable, not a dependency |
+| Search | Meilisearch Cloud | Fast, typo-tolerant (Supabase fallback exists) |
+| Hosting | Railway | Docker-based, auto-deploy from GitHub |
+| Email | Resend + React Email | Developer-friendly templates |
+| Scraping | Cheerio | Lightweight HTML parsing |
+| Analytics | Plausible | Privacy-friendly, ~1KB script |
 
 ## Key Patterns
 
 ### Server vs Client Components
 
-| Use Case | Component Type |
-|----------|----------------|
-| Data fetching | Server Component |
-| SEO pages | Server Component |
-| Interactive UI (filters, search) | Client Component |
-| Forms | Client Component |
-| Static content | Server Component |
+| Pattern | Component Type |
+|---------|----------------|
+| Data fetching, SEO pages, static content | Server Component |
+| Interactive UI (filters, search, forms, votes) | Client Component |
 
 ### Data Fetching
 
 ```typescript
 // Server Component - direct Supabase query
-export default async function ToolsPage() {
-  const supabase = await createClient()
-  const { data: tools } = await supabase.from('tools').select('*')
-  return <ToolGrid tools={tools} />
-}
+const supabase = await createClient()
+const { data } = await supabase.from('tools').select('*')
 ```
 
 ### ISR Strategy
 
 | Page Type | Revalidate | Notes |
 |-----------|------------|-------|
-| Tool pages | 86400 (24h) | Good SEO, fresh enough |
+| Tool pages | 86400 (24h) | Stable content |
 | Deal pages | 3600 (1h) | Time-sensitive |
 | SEO pages | 86400 (24h) | Static with on-demand revalidation |
 | Homepage | 3600 (1h) | Shows latest deals |
 
-## Cron Jobs
+### Cron Jobs
 
-Cron endpoints are available at:
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/cron/scrape-deals` | Run AppSumo scraper |
+| `/api/cron/expire-deals` | Deactivate expired deals |
+| `/api/cron/send-deal-alerts` | Email alerts for new deals |
+| `/api/cron/send-weekly-digest` | Weekly newsletter |
 
-| Endpoint | Purpose | Protection |
-|----------|---------|------------|
-| `/api/cron/scrape-deals` | Run all deal scrapers | CRON_SECRET header |
-| `/api/cron/expire-deals` | Mark expired deals inactive | CRON_SECRET header |
-| `/api/cron/send-deal-alerts` | Send email alerts for new deals | CRON_SECRET header |
-| `/api/cron/send-weekly-digest` | Send weekly digest newsletter | CRON_SECRET header |
+All protected by `Authorization: Bearer CRON_SECRET`.
 
-To trigger manually:
-```bash
-curl -X POST https://your-app.railway.app/api/cron/scrape-deals \
-  -H "Authorization: Bearer YOUR_CRON_SECRET"
-```
-
-For automated scheduling, use:
-- Railway cron (Pro plan required)
-- External service like cron-job.org
-- Supabase Edge Functions with pg_cron
-
-## Environment Variables
-
-### Required
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-### Optional (for full functionality)
-```env
-SUPABASE_SERVICE_ROLE_KEY=     # Admin operations
-CRON_SECRET=                    # Protect cron endpoints
-APPSUMO_AFFILIATE_ID=           # AppSumo partner ID
-
-# Search (Meilisearch)
-NEXT_PUBLIC_MEILISEARCH_HOST=
-MEILISEARCH_ADMIN_KEY=
-NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=
-
-# Email (Resend)
-RESEND_API_KEY=                 # Resend API key
-FROM_EMAIL=                     # Sender address (default: SIFT <noreply@sift.tools>)
-```
-
-## File Structure
+## Project Structure
 
 ```
 src/
-├── app/
-│   ├── page.tsx              # Homepage
-│   ├── tools/
-│   │   ├── page.tsx          # /tools - directory
-│   │   └── [slug]/
-│   │       └── page.tsx      # /tools/[slug] - detail
-│   ├── deals/
-│   │   └── page.tsx          # /deals - feed
-│   ├── api/
-│   │   └── cron/
-│   │       ├── scrape-deals/route.ts
-│   │       └── expire-deals/route.ts
-│   ├── layout.tsx
-│   └── globals.css
+├── app/                          # Pages & routes
+│   ├── page.tsx                  # Homepage
+│   ├── layout.tsx                # Root layout (Plausible, fonts)
+│   ├── globals.css               # OKLch color system
+│   ├── tools/                    # /tools, /tools/[slug]
+│   ├── deals/                    # /deals
+│   ├── vs/                       # /vs/[comparison]
+│   ├── alternatives/             # /alternatives/[tool]
+│   ├── best/                     # /best/[category]
+│   ├── admin/                    # Admin dashboard
+│   ├── profile/                  # User profile pages
+│   ├── submit/                   # Tool/deal submission
+│   ├── login/, signup/           # Auth pages
+│   ├── about/, contact/,         # Legal/info
+│   │   privacy/, terms/
+│   ├── api/cron/                 # Cron endpoints
+│   ├── auth/callback/            # OAuth callback
+│   ├── sitemap.ts                # Dynamic sitemap
+│   └── robots.ts                 # Robots.txt
 ├── components/
-│   ├── ui/                   # shadcn/ui components
-│   ├── layout/
-│   │   ├── Header.tsx
-│   │   └── Footer.tsx
-│   ├── tools/
-│   │   ├── ToolCard.tsx
-│   │   ├── ToolGrid.tsx
-│   │   └── index.ts
-│   └── deals/
-│       ├── DealCard.tsx
-│       ├── DealGrid.tsx
-│       └── index.ts
+│   ├── ui/                       # shadcn/ui primitives
+│   ├── layout/                   # Header, Footer
+│   ├── tools/                    # ToolCard, ToolGrid, VoteButton
+│   ├── deals/                    # DealCard, DealGrid
+│   ├── alerts/                   # DealAlertButton
+│   ├── auth/                     # UserMenu
+│   ├── newsletter/               # NewsletterForm
+│   └── search/                   # SearchBox
 ├── lib/
-│   ├── supabase/
-│   │   ├── server.ts         # Server client
-│   │   ├── client.ts         # Browser client
-│   │   └── middleware.ts     # Auth middleware
-│   ├── scrapers/
-│   │   ├── types.ts          # Scraper interfaces
-│   │   ├── appsumo.ts        # AppSumo scraper
-│   │   ├── orchestrator.ts   # Run & upsert deals
-│   │   └── index.ts
-│   └── utils.ts
+│   ├── supabase/                 # Server/client/middleware/actions
+│   ├── actions/                  # Server actions (admin, alerts, newsletter, submissions, votes)
+│   ├── scrapers/                 # AppSumo scraper, orchestrator, types
+│   ├── email/                    # Resend client, send helper, templates
+│   ├── meilisearch/              # Client, sync utility
+│   └── utils.ts                  # cn() helper
 └── types/
-    ├── database.ts           # Supabase types
-    └── index.ts
+    ├── database.ts               # Supabase generated types
+    └── index.ts                  # App-level type definitions
 ```
 
-## Database Schema
+## Database
 
-See [database.md](./database.md) for full schema.
-
-### Key Tables
-- `tools` - 31 AI tools with pricing, features, affiliate links
-- `deals` - 14 deals with expiration, discount info
-- `categories` - 15 categories (Writing, Image Generation, Coding, etc.)
-- `tool_categories` - Many-to-many relationship
-
-### Current Data
-| Table | Count |
-|-------|-------|
-| tools | 31 |
-| deals | 14 |
-| categories | 15 |
-| tool_categories | 31 |
+See [database.md](database.md) for full schema. Key tables: tools (31), deals (14), categories (15), profiles, votes, deal_alerts, click_events, newsletter_subscribers, tool_submissions, deal_submissions.

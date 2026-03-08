@@ -1,219 +1,98 @@
 # Component Architecture
 
-## Component Hierarchy
+## Component Tree
 
 ```
-Layout
+Layout (src/app/layout.tsx)
 ├── Header
-│   ├── Logo
+│   ├── Logo + Nav links (Tools, Deals)
 │   ├── SearchBox (compact)
-│   └── Navigation
-│       ├── NavLink (Tools)
-│       ├── NavLink (Deals)
-│       └── AuthButton
+│   └── UserMenu (auth dropdown) / Login button
 └── Footer
-    ├── FooterLinks
-    ├── NewsletterSignup
-    └── SocialLinks
+    ├── Nav links
+    └── NewsletterForm
 
 Pages
-├── HomePage
-│   ├── HeroSection
-│   │   └── SearchBox (large)
-│   ├── FeaturedTools
-│   │   └── ToolGrid
-│   │       └── ToolCard[]
-│   ├── LatestDeals
-│   │   └── DealFeed
-│   │       └── DealCard[]
-│   └── CategoryGrid
-│       └── CategoryCard[]
+├── HomePage (src/app/page.tsx)
+│   ├── Hero + SearchBox (large)
+│   ├── FeaturedTools -> ToolGrid -> ToolCard[]
+│   ├── LatestDeals -> DealGrid -> DealCard[]
+│   ├── CategoryGrid
+│   └── Newsletter CTA
 │
-├── ToolsPage
-│   ├── SearchBox
-│   ├── Filters
-│   │   ├── CategoryFilter
-│   │   └── PricingFilter
-│   └── ToolGrid
-│       └── ToolCard[]
+├── ToolsPage (src/app/tools/page.tsx)
+│   ├── Filters (category, pricing)
+│   └── ToolGrid -> ToolCard[]
 │
-├── ToolDetailPage
-│   ├── ToolHero
-│   │   ├── Logo
-│   │   ├── Title/Tagline
-│   │   └── AffiliateButton
-│   ├── FeaturesList
-│   ├── PricingSection
-│   ├── ActiveDeals
-│   │   └── DealCard[]
-│   └── RelatedTools
-│       └── ToolCard[]
+├── ToolDetailPage (src/app/tools/[slug]/page.tsx)
+│   ├── Tool info + VoteButton + DealAlertButton
+│   ├── Features, pricing, use cases
+│   ├── Active deals -> DealCard[]
+│   └── Related tools -> ToolCard[]
 │
-├── DealsPage
-│   ├── DealFilters
-│   └── DealFeed
-│       └── DealCard[]
+├── DealsPage (src/app/deals/page.tsx)
+│   ├── Filters (type, source)
+│   └── DealGrid -> DealCard[]
 │
-└── SEOPages
-    ├── ComparisonPage (/vs/)
-    │   ├── ComparisonHero
-    │   ├── ComparisonTable
-    │   └── FeatureMatrix
-    └── AlternativesPage (/alternatives/)
-        ├── AlternativesHero
-        └── AlternativesList
-            └── ToolCard[]
+├── SEO Pages
+│   ├── /vs/[comparison] - side-by-side comparison
+│   ├── /alternatives/[tool] - ranked alternatives list
+│   └── /best/[category] - top tools per category
+│
+├── Auth: /login, /signup, /forgot-password, /auth/callback
+├── Profile: /profile, /profile/alerts, /profile/settings, /profile/submissions
+├── Submit: /submit, /submit/tool, /submit/deal
+├── Admin: /admin (submission review dashboard)
+└── Legal: /about, /contact, /privacy, /terms
 ```
 
-## Core Components
+## Custom Components
 
-### ToolCard
+| Component | Path | Type | Purpose |
+|-----------|------|------|---------|
+| Header | `components/layout/Header.tsx` | Client | Nav, search, auth menu |
+| Footer | `components/layout/Footer.tsx` | Server | Nav, newsletter |
+| ToolCard | `components/tools/ToolCard.tsx` | Server | Tool display in grids |
+| ToolGrid | `components/tools/ToolGrid.tsx` | Server | Grid layout for tools |
+| VoteButton | `components/tools/VoteButton.tsx` | Client | Upvote with optimistic UI |
+| DealCard | `components/deals/DealCard.tsx` | Server | Deal display with pricing |
+| DealGrid | `components/deals/DealGrid.tsx` | Server | Grid layout for deals |
+| DealAlertButton | `components/alerts/DealAlertButton.tsx` | Client | Subscribe to tool/category alerts |
+| UserMenu | `components/auth/UserMenu.tsx` | Client | Auth dropdown (profile, logout) |
+| NewsletterForm | `components/newsletter/NewsletterForm.tsx` | Client | Email signup form |
+| SearchBox | `components/search/SearchBox.tsx` | Client | Meilisearch instant search |
 
-Displays a tool in grid/list views.
+## shadcn/ui Components (src/components/ui/)
 
-```typescript
-interface ToolCardProps {
-  tool: Tool
-  variant?: 'default' | 'compact' | 'featured'
-  showCategory?: boolean
-}
-```
-
-**Variants:**
-- `default`: Logo, name, tagline, pricing badge, primary category
-- `compact`: Logo, name, pricing badge only
-- `featured`: Larger card with gradient border, featured badge
-
-### DealCard
-
-Displays a deal with pricing and urgency.
-
-```typescript
-interface DealCardProps {
-  deal: Deal
-  variant?: 'default' | 'compact'
-  showTool?: boolean
-}
-```
-
-**Features:**
-- Discount badge (e.g., "60% OFF")
-- Price comparison (was $99, now $39)
-- Source badge (AppSumo, StackSocial)
-- Countdown timer if expires within 7 days
-- Tool link if `showTool` is true
-
-### AffiliateButton
-
-CTA button with click tracking.
-
-```typescript
-interface AffiliateButtonProps {
-  tool: Tool
-  deal?: Deal
-  variant?: 'default' | 'large' | 'outline'
-  children?: React.ReactNode
-}
-```
-
-**Behavior:**
-1. On click, POST to `/api/click` with tool_id
-2. Redirect to affiliate_url (or website_url as fallback)
-3. Open in new tab with `rel="noopener sponsored"`
-
-### SearchBox
-
-Meilisearch-powered instant search.
-
-```typescript
-interface SearchBoxProps {
-  variant?: 'compact' | 'large'
-  placeholder?: string
-  autoFocus?: boolean
-}
-```
-
-**Features:**
-- Instant results dropdown
-- Keyboard navigation
-- Recent searches (localStorage)
-- Category suggestions
+badge, button, card, dialog, dropdown-menu, input, label, scroll-area, select, separator, sheet, skeleton, tabs, textarea
 
 ## Design Tokens
 
-### Colors (CSS Variables)
+### Colors (OKLch - Dark Theme Default)
 
 ```css
-/* Dark Theme (Default) */
---background: 222.2 84% 4.9%;
---foreground: 210 40% 98%;
---card: 222.2 84% 6%;
---card-foreground: 210 40% 98%;
---primary: 262.1 83.3% 57.8%;      /* Purple */
---primary-foreground: 210 40% 98%;
---secondary: 217.2 32.6% 17.5%;
---accent: 142.1 76.2% 36.3%;       /* Green - deals */
---destructive: 0 62.8% 30.6%;
---muted: 217.2 32.6% 17.5%;
---border: 217.2 32.6% 17.5%;
+/* Background */
+--background: oklch(0.16 0.01 200);     /* Soft dark with cool tint */
+--card: oklch(0.20 0.01 200);           /* Elevated surfaces */
+
+/* Primary - Aqua/Teal (hue 180) */
+--primary: oklch(0.70 0.12 180);        /* Main brand color */
+--primary-foreground: oklch(0.15 0.02 180);
+
+/* Neutral */
+--foreground: oklch(0.92 0.01 200);
+--muted: oklch(0.24 0.01 200);
+--muted-foreground: oklch(0.58 0.01 200);
+--border: oklch(0.28 0.01 200);
+
+/* Accent = Primary for unified look */
+--accent: oklch(0.70 0.12 180);
 ```
 
-### Spacing
+Light theme variables exist in `.light` class (purple primary at hue 285, green accent at hue 145). Not yet togglable - dark is default.
 
-Use Tailwind's default spacing scale (4px base).
-
-### Border Radius
-
-- `rounded-sm`: 4px (small elements)
-- `rounded-md`: 6px (buttons, inputs)
-- `rounded-lg`: 8px (cards)
-- `rounded-xl`: 12px (large cards, modals)
-
-### Shadows
-
-```css
---shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
---shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
---shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-```
-
-## Animation Patterns
-
-### Hover Effects
-
-```css
-/* Card hover */
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Button hover */
-.button:hover {
-  opacity: 0.9;
-}
-```
-
-### Loading States
-
-- Use shadcn Skeleton for placeholders
-- Maintain layout dimensions to prevent CLS
-- 3 skeleton cards minimum in grids
-
-### Transitions
-
-```css
-/* Default transition */
-transition: all 150ms ease;
-
-/* Cards */
-transition: transform 200ms ease, box-shadow 200ms ease;
-```
-
-## Accessibility
-
-- All interactive elements have focus states
-- Color contrast meets WCAG AA
-- Images have alt text
-- Forms have proper labels
-- Keyboard navigation works throughout
+### Design Notes
+- Outlined button style (not filled) for distinctive look
+- Cards with subtle elevation, cool-tinted backgrounds
+- Lucide icons throughout, never emoji
+- 8.5/10 UI assessment - distinctive, not generic
