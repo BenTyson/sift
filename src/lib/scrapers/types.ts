@@ -14,6 +14,13 @@ export interface ScrapedDeal {
   imageUrl?: string
   expiresAt?: Date
   toolName?: string // For matching to existing tools
+  toolUrl?: string // Tool's website URL (distinct from deal marketplace URL)
+}
+
+export interface ToolMatchResult {
+  tool: { id: string; name: string; slug: string }
+  confidence: number
+  matchType: 'exact-slug' | 'exact-name' | 'alias' | 'domain' | 'levenshtein' | 'substring'
 }
 
 export interface ScraperResult {

@@ -1,17 +1,12 @@
 import { anthropic, isClaudeConfigured } from './claude-client'
 import { createClient } from '@supabase/supabase-js'
 import { TOOL_LIST, type ToolEntry } from './tool-list'
+import { CATEGORY_SLUGS } from '@/lib/constants/categories'
 
 const BATCH_SIZE = 5
 const BATCH_DELAY_MS = 1000
 
 const VALID_PRICING_MODELS = ['free', 'freemium', 'paid', 'open_source', 'contact_sales'] as const
-
-const CATEGORY_SLUGS = [
-  'writing', 'image-generation', 'video', 'audio', 'coding',
-  'productivity', 'marketing', 'sales', 'customer-support',
-  'research', 'data', 'design', 'social-media', 'seo', 'automation',
-] as const
 
 interface GeneratedTool {
   name: string

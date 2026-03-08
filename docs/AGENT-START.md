@@ -29,9 +29,12 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 - **No affiliate IDs** - `APPSUMO_AFFILIATE_ID` env var not set, making $0 (Ben action item)
 - **Email not sending** - Resend not configured in production (Ben action item)
 - **Only 31 tools** - need 200+ for credibility
-- **Only 1 scraper** - AppSumo only; StackSocial/PitchGround built but not yet tested in production
+- **3 scrapers untested in prod** - AppSumo, StackSocial, PitchGround built but need env vars + live test
 
 ### Recently Completed
+- **Auto-categorization** - Keyword categorizer auto-assigns categories on tool approval (B2)
+- **Improved tool matching** - 6-tier pipeline with aliases, domain, Levenshtein; `tool_aliases` table with 27 seeds (B4)
+- **AI tool importer** - Claude-powered batch import with metadata generation (B1)
 - **StackSocial + PitchGround scrapers** - Both implemented, registered in orchestrator (B3)
 - **Click tracking** - `POST /api/track/click` + `<AffiliateLink>` component across all pages (A1, A2)
 - **Email verification** - Double opt-in flow with `GET /api/verify-email?token=...` (A5)
@@ -62,7 +65,7 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 | Search | `src/lib/meilisearch/` (client.ts, sync.ts) |
 | Types | `src/types/` (database.ts, index.ts) |
 | Styles | `src/app/globals.css` (OKLch aqua palette, dark default) |
-| Migrations | `supabase/migrations/` (7 files) |
+| Migrations | `supabase/migrations/` (9 files) |
 | API endpoints | `src/app/api/` (track/click, verify-email, unsubscribe, search, cron/*) |
 
 ## Key Patterns

@@ -62,10 +62,11 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 - Batch import 200+ tools
 - **Files:** New `src/lib/importers/ai-tool-importer.ts`
 
-### B2. Auto-Categorization
-- Auto-assign categories on import/submission using keyword matching or AI
-- Populate `tool_categories` with `is_primary` flag
-- **Files:** New `src/lib/utils/categorize.ts`
+### B2. Auto-Categorization (DONE)
+- Keyword-based categorizer: weights name 3x, tagline 2x, multi-word phrases 1.5x
+- Shared `CATEGORY_SLUGS` constant extracted to `src/lib/constants/categories.ts`
+- Auto-assigns categories on tool approval when none provided
+- **Files:** `src/lib/constants/categories.ts`, `src/lib/utils/categorize.ts`, edited `src/lib/actions/admin.ts`, `src/lib/importers/ai-tool-importer.ts`
 
 ### B3. Additional Deal Scrapers (DONE - StackSocial + PitchGround)
 - StackSocial (`stacksocial.ts`) + PitchGround (`pitchground.ts`) scrapers implemented
@@ -74,10 +75,12 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 - Env vars needed: `STACKSOCIAL_AFFILIATE_ID`, `PITCHGROUND_AFFILIATE_ID`
 - **Files:** `src/lib/scrapers/stacksocial.ts`, `src/lib/scrapers/pitchground.ts`, edited `orchestrator.ts`, `index.ts`
 
-### B4. Improved Tool Matching
-- Levenshtein distance + domain URL matching + alias table
-- Add `tool_aliases` table for alternate names
-- **Files:** Edit `src/lib/scrapers/orchestrator.ts`, new migration
+### B4. Improved Tool Matching (DONE)
+- 6-tier matching pipeline: exact slug, exact name, alias, domain, Levenshtein, substring
+- `tool_aliases` table with 27 seeded aliases (GPT-4->ChatGPT, MJ->Midjourney, etc.)
+- Returns `ToolMatchResult` with confidence score and match type
+- `toolUrl` field added to `ScrapedDeal` for domain-based matching
+- **Files:** `supabase/migrations/20250308000000_tool_aliases.sql`, `20250308000001_seed_tool_aliases.sql`, edited `src/lib/scrapers/orchestrator.ts`, `src/lib/scrapers/types.ts`, `src/types/database.ts`
 
 ### B5. Community Submission Auto-Processing
 - On tool approval, auto-generate SEO pages (/alternatives/, /vs/ combinations)
@@ -178,9 +181,9 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 | 1-2 | Click tracking + AffiliateLink component | A1, A2 (DONE) |
 | 3 | Affiliate IDs + Resend config | A3, A4 (Ben action items) |
 | 4 | Email verification flow | A5 (DONE) |
-| 5-6 | AI tool importer + first batch | B1 |
+| 5-6 | AI tool importer + first batch | B1 (DONE) |
 | 7 | Additional scrapers | B3 (DONE) |
-| 8 | Tool matching + auto-categorization | B2, B4 |
+| 8 | Tool matching + auto-categorization | B2, B4 (DONE) |
 | 9 | Custom domain + Search Console | D1, D2 |
 | 10 | Structured data (JSON-LD) | D3 |
 | 11 | Internal linking + page expansion | D4, D6 |

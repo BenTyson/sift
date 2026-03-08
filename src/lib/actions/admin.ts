@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { categorize } from '@/lib/utils/categorize'
 
 // Helper to check if current user is admin
 export async function isCurrentUserAdmin(): Promise<boolean> {
@@ -117,6 +118,33 @@ export async function approveToolSubmission(submissionId: string, notes?: string
     }))
 
     await (supabase.from('tool_categories') as any).insert(categoryLinks)
+  } else {
+    // Auto-categorize if no categories provided
+    const { categories: suggestedSlugs } = categorize({
+      name: submission.name,
+      tagline: submission.tagline,
+      description: submission.description,
+      features: submission.features,
+    })
+
+    const { data: categories } = await supabase
+      .from('categories')
+      .select('id, slug')
+      .in('slug', suggestedSlugs) as { data: { id: string; slug: string }[] | null }
+
+    if (categories && categories.length > 0) {
+      const categoryLinks: { tool_id: string; category_id: string; is_primary: boolean }[] = []
+      for (let i = 0; i < suggestedSlugs.length; i++) {
+        const cat = categories.find(c => c.slug === suggestedSlugs[i])
+        if (cat) {
+          categoryLinks.push({ tool_id: tool.id, category_id: cat.id, is_primary: i === 0 })
+        }
+      }
+
+      if (categoryLinks.length > 0) {
+        await (supabase.from('tool_categories') as any).insert(categoryLinks)
+      }
+    }
   }
 
   // Update submission status

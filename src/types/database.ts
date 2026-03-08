@@ -328,6 +328,26 @@ export interface Database {
           created_at?: string
         }
       }
+      tool_aliases: {
+        Row: {
+          id: string
+          tool_id: string
+          alias: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tool_id: string
+          alias: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tool_id?: string
+          alias?: string
+          created_at?: string
+        }
+      }
       click_events: {
         Row: {
           id: string
@@ -378,6 +398,8 @@ export type Vote = Database['public']['Tables']['votes']['Row']
 export type DealAlert = Database['public']['Tables']['deal_alerts']['Row']
 export type NewsletterSubscriber = Database['public']['Tables']['newsletter_subscribers']['Row']
 export type ClickEvent = Database['public']['Tables']['click_events']['Row']
+export type ToolAlias = Database['public']['Tables']['tool_aliases']['Row']
+export type ToolAliasInsert = Database['public']['Tables']['tool_aliases']['Insert']
 
 // Extended types with relationships
 export type ToolWithCategories = Tool & {

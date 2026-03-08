@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Database, DealInsert } from '@/types/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { ScrapedDeal, ScraperResult, Scraper } from './types'
+import type { ScrapedDeal, Scraper, ToolMatchResult } from './types'
 import { appSumoScraper } from './appsumo'
 import { stackSocialScraper } from './stacksocial'
 import { pitchGroundScraper } from './pitchground'
@@ -15,13 +15,19 @@ const scrapers: Scraper[] = [
   pitchGroundScraper,
 ]
 
-interface ToolMatch {
+interface ToolRow {
   id: string
   name: string
   slug: string
+  website_url: string
 }
 
-// Simple fuzzy matching for tool names
+interface AliasRow {
+  alias: string
+  tool_id: string
+  tools: { id: string; name: string; slug: string }
+}
+
 function normalizeToolName(name: string): string {
   return name
     .toLowerCase()
@@ -29,32 +35,161 @@ function normalizeToolName(name: string): string {
     .replace(/(ai|app|tool|software|pro|premium|lifetime|deal|ltd)$/g, '')
 }
 
-async function findMatchingTool(toolName: string): Promise<ToolMatch | null> {
-  const supabase = await createClient()
+function extractDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return null
+  }
+}
 
-  // First try exact match on name or slug
+function levenshtein(a: string, b: string): number {
+  const m = a.length
+  const n = b.length
+  let prev = Array.from({ length: n + 1 }, (_, i) => i)
+  const curr = new Array(n + 1)
+
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      curr[j] = Math.min(
+        prev[j] + 1,
+        curr[j - 1] + 1,
+        prev[j - 1] + cost
+      )
+    }
+    // Swap rows
+    for (let j = 0; j <= n; j++) {
+      prev[j] = curr[j]
+    }
+  }
+  return prev[n]
+}
+
+async function findMatchingTool(
+  toolName: string,
+  sourceUrl?: string
+): Promise<ToolMatchResult | null> {
+  const supabase = await createClient()
   const normalized = normalizeToolName(toolName)
 
-  const { data: tools } = await supabase
-    .from('tools')
-    .select('id, name, slug')
-    .eq('status', 'active')
+  // Fetch tools and aliases in parallel
+  const [{ data: tools }, { data: aliases }] = await Promise.all([
+    supabase
+      .from('tools')
+      .select('id, name, slug, website_url')
+      .eq('status', 'active') as unknown as { data: ToolRow[] | null },
+    (supabase
+      .from('tool_aliases') as any)
+      .select('alias, tool_id, tools:tool_id(id, name, slug)') as unknown as { data: AliasRow[] | null },
+  ])
 
   if (!tools || tools.length === 0) return null
 
-  // Try exact slug match
-  const exactSlug = tools.find((t: ToolMatch) => t.slug === normalized)
-  if (exactSlug) return exactSlug
-
-  // Try fuzzy name match
-  for (const tool of tools as ToolMatch[]) {
-    const toolNormalized = normalizeToolName(tool.name)
-    if (toolNormalized === normalized) {
-      return tool
+  // 1. Exact slug match (confidence 1.0)
+  const slugMatch = tools.find(t => t.slug === normalized)
+  if (slugMatch) {
+    return {
+      tool: { id: slugMatch.id, name: slugMatch.name, slug: slugMatch.slug },
+      confidence: 1.0,
+      matchType: 'exact-slug',
     }
-    // Partial match (tool name contains or is contained in deal name)
-    if (normalized.includes(toolNormalized) || toolNormalized.includes(normalized)) {
-      return tool
+  }
+
+  // 2. Exact normalized name match (confidence 1.0)
+  for (const tool of tools) {
+    if (normalizeToolName(tool.name) === normalized) {
+      return {
+        tool: { id: tool.id, name: tool.name, slug: tool.slug },
+        confidence: 1.0,
+        matchType: 'exact-name',
+      }
+    }
+  }
+
+  // 3. Alias match (confidence 0.95)
+  if (aliases && aliases.length > 0) {
+    const normalizedForAlias = toolName.toLowerCase().trim()
+    for (const alias of aliases) {
+      if (alias.alias.toLowerCase() === normalizedForAlias && alias.tools) {
+        return {
+          tool: alias.tools,
+          confidence: 0.95,
+          matchType: 'alias',
+        }
+      }
+    }
+    // Also try normalized version against aliases
+    for (const alias of aliases) {
+      if (normalizeToolName(alias.alias) === normalized && alias.tools) {
+        return {
+          tool: alias.tools,
+          confidence: 0.95,
+          matchType: 'alias',
+        }
+      }
+    }
+  }
+
+  // 4. Domain match (confidence 0.9)
+  if (sourceUrl) {
+    const sourceDomain = extractDomain(sourceUrl)
+    if (sourceDomain) {
+      for (const tool of tools) {
+        const toolDomain = extractDomain(tool.website_url)
+        if (toolDomain && toolDomain === sourceDomain) {
+          return {
+            tool: { id: tool.id, name: tool.name, slug: tool.slug },
+            confidence: 0.9,
+            matchType: 'domain',
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Levenshtein distance (require name >= 5 chars, min confidence 0.75)
+  if (normalized.length >= 5) {
+    let bestMatch: ToolRow | null = null
+    let bestConfidence = 0
+
+    for (const tool of tools) {
+      const toolNormalized = normalizeToolName(tool.name)
+      if (toolNormalized.length < 5) continue
+
+      const distance = levenshtein(normalized, toolNormalized)
+      const maxLen = Math.max(normalized.length, toolNormalized.length)
+      const confidence = 1 - distance / maxLen
+
+      if (confidence >= 0.75 && confidence > bestConfidence) {
+        bestConfidence = confidence
+        bestMatch = tool
+      }
+    }
+
+    if (bestMatch) {
+      return {
+        tool: { id: bestMatch.id, name: bestMatch.name, slug: bestMatch.slug },
+        confidence: bestConfidence,
+        matchType: 'levenshtein',
+      }
+    }
+  }
+
+  // 6. Substring match (confidence 0.6, require substring >= 4 chars)
+  if (normalized.length >= 4) {
+    for (const tool of tools) {
+      const toolNormalized = normalizeToolName(tool.name)
+      if (toolNormalized.length < 4) continue
+
+      if (normalized.includes(toolNormalized) || toolNormalized.includes(normalized)) {
+        return {
+          tool: { id: tool.id, name: tool.name, slug: tool.slug },
+          confidence: 0.6,
+          matchType: 'substring',
+        }
+      }
     }
   }
 
@@ -88,12 +223,12 @@ async function upsertDeals(deals: ScrapedDeal[]): Promise<UpsertResult> {
         .single() as { data: { id: string } | null }
 
       // Find matching tool
-      const matchedTool = deal.toolName
-        ? await findMatchingTool(deal.toolName)
+      const matchResult = deal.toolName
+        ? await findMatchingTool(deal.toolName, deal.toolUrl)
         : null
 
       const dealData: DealInsert = {
-        tool_id: matchedTool?.id || null,
+        tool_id: matchResult?.tool.id || null,
         source: deal.source,
         source_id: deal.sourceId,
         source_url: deal.sourceUrl,
