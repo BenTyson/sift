@@ -67,11 +67,12 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 - Populate `tool_categories` with `is_primary` flag
 - **Files:** New `src/lib/utils/categorize.ts`
 
-### B3. Additional Deal Scrapers
-- StackSocial, PitchGround, Product Hunt scrapers
-- Each implements `DealScraper` interface
-- Register in orchestrator
-- **Files:** New scrapers in `src/lib/scrapers/`, edit `orchestrator.ts`
+### B3. Additional Deal Scrapers (DONE - StackSocial + PitchGround)
+- StackSocial (`stacksocial.ts`) + PitchGround (`pitchground.ts`) scrapers implemented
+- Both registered in orchestrator, exported from barrel index
+- Product Hunt deferred (not a deals marketplace — different data model)
+- Env vars needed: `STACKSOCIAL_AFFILIATE_ID`, `PITCHGROUND_AFFILIATE_ID`
+- **Files:** `src/lib/scrapers/stacksocial.ts`, `src/lib/scrapers/pitchground.ts`, edited `orchestrator.ts`, `index.ts`
 
 ### B4. Improved Tool Matching
 - Levenshtein distance + domain URL matching + alias table
@@ -178,7 +179,7 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 | 3 | Affiliate IDs + Resend config | A3, A4 (Ben action items) |
 | 4 | Email verification flow | A5 (DONE) |
 | 5-6 | AI tool importer + first batch | B1 |
-| 7 | Additional scrapers | B3 |
+| 7 | Additional scrapers | B3 (DONE) |
 | 8 | Tool matching + auto-categorization | B2, B4 |
 | 9 | Custom domain + Search Console | D1, D2 |
 | 10 | Structured data (JSON-LD) | D3 |

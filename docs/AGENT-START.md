@@ -29,9 +29,10 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 - **No affiliate IDs** - `APPSUMO_AFFILIATE_ID` env var not set, making $0 (Ben action item)
 - **Email not sending** - Resend not configured in production (Ben action item)
 - **Only 31 tools** - need 200+ for credibility
-- **Only 1 scraper** - AppSumo only; StackSocial/PitchGround not built
+- **Only 1 scraper** - AppSumo only; StackSocial/PitchGround built but not yet tested in production
 
 ### Recently Completed
+- **StackSocial + PitchGround scrapers** - Both implemented, registered in orchestrator (B3)
 - **Click tracking** - `POST /api/track/click` + `<AffiliateLink>` component across all pages (A1, A2)
 - **Email verification** - Double opt-in flow with `GET /api/verify-email?token=...` (A5)
 
@@ -56,7 +57,7 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 | Components | `src/components/` (alerts, auth, deals, layout, newsletter, search, shared, tools, ui) |
 | Server actions | `src/lib/actions/` (admin, alerts, newsletter, submissions, votes) |
 | Supabase clients | `src/lib/supabase/` (server.ts, client.ts, actions.ts, middleware.ts, hooks.ts) |
-| Scrapers | `src/lib/scrapers/` (appsumo.ts, orchestrator.ts, types.ts) |
+| Scrapers | `src/lib/scrapers/` (appsumo.ts, stacksocial.ts, pitchground.ts, orchestrator.ts, types.ts) |
 | Email | `src/lib/email/` (client.ts, send.ts, templates/) |
 | Search | `src/lib/meilisearch/` (client.ts, sync.ts) |
 | Types | `src/types/` (database.ts, index.ts) |

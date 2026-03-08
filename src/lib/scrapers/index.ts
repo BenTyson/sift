@@ -1,3 +1,5 @@
 export * from './types'
 export * from './appsumo'
+export * from './stacksocial'
+export * from './pitchground'
 export * from './orchestrator'

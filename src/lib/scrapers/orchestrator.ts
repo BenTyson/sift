@@ -3,13 +3,16 @@ import type { Database, DealInsert } from '@/types/database'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ScrapedDeal, ScraperResult, Scraper } from './types'
 import { appSumoScraper } from './appsumo'
+import { stackSocialScraper } from './stacksocial'
+import { pitchGroundScraper } from './pitchground'
 
 type TypedSupabaseClient = SupabaseClient<Database>
 
 // Register all scrapers here
 const scrapers: Scraper[] = [
   appSumoScraper,
-  // Add more scrapers: stackSocialScraper, pitchGroundScraper, etc.
+  stackSocialScraper,
+  pitchGroundScraper,
 ]
 
 interface ToolMatch {

@@ -12,6 +12,8 @@ Things Claude cannot do -- requires human action (account signups, dashboards, D
 - [ ] Check Impact.com / PartnerStack for additional AI tool affiliate programs
 - [ ] Set `APPSUMO_AFFILIATE_ID` env var in Railway dashboard
 - [ ] Set `APPSUMO_AFFILIATE_ID` in `.env.local` for dev
+- [ ] Set `STACKSOCIAL_AFFILIATE_ID` env var in Railway dashboard and `.env.local`
+- [ ] Set `PITCHGROUND_AFFILIATE_ID` env var in Railway dashboard and `.env.local`
 
 ### A4. Resend Email Configuration
 - [ ] Create Resend account at resend.com (if not already done)
