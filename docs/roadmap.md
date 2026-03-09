@@ -98,19 +98,27 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 
 *Make it feel crafted, not templated.*
 
-### C1. Design System Refinement
-- About/Contact pages need visual interest
-- Micro-interactions, empty states, toast notifications (sonner)
+### C1. Design System Refinement (DONE - partial)
+- Glass morphism utilities, glow effects, gradient borders in globals.css
+- Custom button variants (glow, outline-glow, ghost-subtle, destructive-subtle)
+- Container centering fix for Tailwind v4 (`@utility container`)
+- About/Contact pages still need visual interest
+- Toast notifications (sonner) still needed
 
-### C2. Homepage Redesign
-- Trending tools, real-time deal count, social proof
-- Category browser with preview on hover
+### C2. Homepage Redesign (DONE)
+- Animated hero with floating gradient blobs (HeroBackground component)
+- Animated stats counter (AnimatedStats component)
+- Redesigned layout with featured deals and tools sections
+- **Files:** `src/app/page.tsx`, `src/components/layout/HeroBackground.tsx`, `src/components/layout/AnimatedStats.tsx`
 
 ### C3. Tool Detail Page Enhancement
 - Pricing comparison, similar tools carousel, JSON-LD structured data, pros/cons
 
-### C4. Deal Card Improvements
-- Countdown timers, popularity indicators, verified badges
+### C4. Deal Card & Tool Card Improvements (DONE)
+- Redesigned DealCard with glass morphism, glow effects, gradient borders
+- Redesigned ToolCard with hover effects, better visual hierarchy
+- Updated DealGrid and ToolGrid layouts
+- **Files:** `src/components/deals/DealCard.tsx`, `src/components/tools/ToolCard.tsx`, `src/components/deals/DealGrid.tsx`, `src/components/tools/ToolGrid.tsx`
 
 ### C5. Mobile Experience Polish
 - Touch targets (44px min), bottom nav, swipeable cards
@@ -187,8 +195,8 @@ Restructured docs/ for fast agent onboarding. Created AGENT-START.md, project CL
 | 9 | Custom domain + Search Console | D1, D2 |
 | 10 | Structured data (JSON-LD) | D3 |
 | 11 | Internal linking + page expansion | D4, D6 |
-| 12-13 | Homepage + toast notifications | C1, C2, C6 |
-| 14 | Tool detail + deal cards | C3, C4 |
+| 12-13 | Homepage + design system + card redesign | C1, C2, C4 (DONE) |
+| 14 | Tool detail + toast + loading states | C3, C6 |
 | 15 | Mobile + dark/light toggle | C5, C7 |
 | 16 | Cron hardening + error notifications | E1 |
 | 17 | Admin dashboard overhaul | E2 |

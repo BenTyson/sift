@@ -83,14 +83,15 @@ export function ToolGrid({
   }
 
   return (
-    <div className={`grid grid-cols-1 ${gridCols[columns]} gap-4`}>
-      {tools.map((tool) => (
+    <div className={`grid grid-cols-1 ${gridCols[columns]} gap-6`}>
+      {tools.map((tool, i) => (
         <ToolCard
           key={tool.id}
           tool={tool}
           categories={categories[tool.id]}
           variant={variant}
           userVote={userVotes[tool.id] ?? null}
+          index={i}
         />
       ))}
     </div>

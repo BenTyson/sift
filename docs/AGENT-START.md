@@ -32,6 +32,7 @@ AI tools directory with deal aggregation. Passive monetization via affiliate lin
 - **3 scrapers untested in prod** - AppSumo, StackSocial, PitchGround built but need env vars + live test
 
 ### Recently Completed
+- **UI/UX overhaul** - Homepage redesign, glass morphism design system, card redesigns, container fix for Tailwind v4 (C1, C2, C4)
 - **Auto-categorization** - Keyword categorizer auto-assigns categories on tool approval (B2)
 - **Improved tool matching** - 6-tier pipeline with aliases, domain, Levenshtein; `tool_aliases` table with 27 seeds (B4)
 - **AI tool importer** - Claude-powered batch import with metadata generation (B1)

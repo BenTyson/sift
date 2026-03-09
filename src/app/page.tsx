@@ -6,8 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ToolGrid } from '@/components/tools'
 import { DealGrid } from '@/components/deals'
+import { HeroBackground } from '@/components/layout/HeroBackground'
+import { AnimatedStats } from '@/components/layout/AnimatedStats'
 import { createClient } from '@/lib/supabase/server'
-import type { Tool, Deal, Category } from '@/types'
+import type { Category } from '@/types'
 
 const categoryIcons: Record<string, React.ReactNode> = {
   'pen-tool': <PenTool className="h-5 w-5" />,
@@ -30,14 +32,12 @@ const categoryIcons: Record<string, React.ReactNode> = {
 export default async function HomePage() {
   const supabase = await createClient()
 
-  // Fetch categories
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
     .order('display_order')
     .limit(6)
 
-  // Fetch featured tools
   const { data: featuredTools } = await supabase
     .from('tools')
     .select('*')
@@ -46,15 +46,16 @@ export default async function HomePage() {
     .order('upvotes', { ascending: false })
     .limit(6)
 
-  // Fetch latest deals
+  const now = new Date().toISOString()
+
   const { data: deals } = await supabase
     .from('deals')
     .select('*')
     .eq('is_active', true)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
     .order('created_at', { ascending: false })
     .limit(4)
 
-  // Get counts for stats
   const { count: toolCount } = await supabase
     .from('tools')
     .select('*', { count: 'exact', head: true })
@@ -73,9 +74,7 @@ export default async function HomePage() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-3xl opacity-20" />
+        <HeroBackground />
 
         <div className="container relative px-4 md:px-6">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
@@ -86,7 +85,9 @@ export default async function HomePage() {
 
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
               Sift through the noise.
-              <span className="block text-primary">Find the best AI tools.</span>
+              <span className="block bg-gradient-to-r from-primary via-savings to-primary bg-clip-text text-transparent">
+                Find the best AI tools.
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
@@ -119,24 +120,12 @@ export default async function HomePage() {
       {/* Stats Bar */}
       <section className="border-y border-border/40 bg-card/50">
         <div className="container px-4 md:px-6 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-2xl md:text-3xl font-bold">{toolCount || 0}+</div>
-              <div className="text-sm text-muted-foreground">AI Tools</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold">{dealCount || 0}+</div>
-              <div className="text-sm text-muted-foreground">Active Deals</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold">{categoryCount || 0}</div>
-              <div className="text-sm text-muted-foreground">Categories</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold">Daily</div>
-              <div className="text-sm text-muted-foreground">Updates</div>
-            </div>
-          </div>
+          <AnimatedStats stats={[
+            { value: toolCount || 0, label: 'AI Tools', suffix: '+' },
+            { value: dealCount || 0, label: 'Active Deals', suffix: '+' },
+            { value: categoryCount || 0, label: 'Categories' },
+            { value: 'Daily', label: 'Updates' },
+          ]} />
         </div>
       </section>
 
@@ -197,9 +186,9 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {(categories || []).map((category: Category) => (
               <Link key={category.id} href={`/tools?category=${category.slug}`}>
-                <Card className="group h-full border-border/50 bg-card/50 hover:bg-card hover:border-primary/50 transition-all duration-200">
+                <Card className="group h-full glass hover:glass-hover hover:border-primary/50 transition-all duration-300">
                   <CardContent className="p-6 flex flex-col items-center text-center">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 transition-all duration-300">
                       {category.icon && categoryIcons[category.icon]}
                     </div>
                     <h3 className="font-semibold">{category.name}</h3>
@@ -221,9 +210,9 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-primary/5">
+      <section className="py-16 md:py-24">
         <div className="container px-4 md:px-6">
-          <div className="max-w-2xl mx-auto text-center">
+          <div className="max-w-2xl mx-auto text-center glass gradient-border rounded-2xl p-10 md:p-14">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Never miss a deal
             </h2>
@@ -236,7 +225,7 @@ export default async function HomePage() {
                 placeholder="you@example.com"
                 className="flex-1 h-12 bg-card"
               />
-              <Button type="submit" size="lg">
+              <Button type="submit" variant="cta" size="lg">
                 Subscribe
               </Button>
             </form>

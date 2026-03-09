@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Tag, Percent, Clock, Gift } from 'lucide-react'
+import { Tag as TagIcon, Percent, Clock, Gift } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { DealGrid } from '@/components/deals'
 import { createClient } from '@/lib/supabase/server'
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const dealTypeFilters = [
   { value: 'ltd', label: 'Lifetime Deals', icon: Gift },
   { value: 'discount', label: 'Discounts', icon: Percent },
-  { value: 'coupon', label: 'Coupons', icon: Tag },
+  { value: 'coupon', label: 'Coupons', icon: TagIcon },
   { value: 'trial', label: 'Free Trials', icon: Clock },
 ]
 
@@ -36,11 +36,14 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
 
   const supabase = await createClient()
 
-  // Build deals query
+  const now = new Date().toISOString()
+
+  // Build deals query — exclude expired deals by default
   let dealsQuery = supabase
     .from('deals')
     .select('*')
     .eq('is_active', true)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
     .order('created_at', { ascending: false })
 
   if (selectedType) {
@@ -53,22 +56,24 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
 
   const { data: deals } = await dealsQuery
 
-  // Get deal counts by type
+  // Get deal counts by type (non-expired only)
   const { data: typeCounts } = await supabase
     .from('deals')
     .select('deal_type')
     .eq('is_active', true)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
 
   const typeCountMap = (typeCounts || []).reduce((acc, deal: { deal_type: string }) => {
     acc[deal.deal_type] = (acc[deal.deal_type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  // Get deal counts by source
+  // Get deal counts by source (non-expired only)
   const { data: sourceCounts } = await supabase
     .from('deals')
     .select('source')
     .eq('is_active', true)
+    .or(`expires_at.is.null,expires_at.gt.${now}`)
 
   const sourceCountMap = (sourceCounts || []).reduce((acc, deal: { source: string }) => {
     acc[deal.source] = (acc[deal.source] || 0) + 1
@@ -79,8 +84,11 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
 
   return (
     <div className="min-h-screen">
+      {/* Gradient accent line */}
+      <div className="h-0.5 bg-gradient-to-r from-primary/80 via-urgency/60 to-savings/80" />
+
       {/* Header */}
-      <div className="border-b border-border/40 bg-card/30">
+      <div className="border-b border-border/40 bg-gradient-to-b from-surface-1 to-background">
         <div className="container px-4 md:px-6 py-8">
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-3xl font-bold">AI Tool Deals</h1>
@@ -107,10 +115,10 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
                 <div className="space-y-1">
                   <Link
                     href="/deals"
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                       !selectedType
-                        ? 'bg-primary/70 text-primary-foreground'
-                        : 'hover:bg-secondary'
+                        ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                        : 'hover:bg-surface-2'
                     }`}
                   >
                     <span>All Deals</span>
@@ -123,10 +131,10 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
                       <Link
                         key={filter.value}
                         href={`/deals?type=${filter.value}${selectedSource ? `&source=${selectedSource}` : ''}`}
-                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                           selectedType === filter.value
-                            ? 'bg-primary/70 text-primary-foreground'
-                            : 'hover:bg-secondary'
+                            ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                            : 'hover:bg-surface-2'
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -169,7 +177,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
               </div>
 
               {/* Info Box */}
-              <div className="rounded-lg border border-border/50 bg-card/50 p-4">
+              <div className="rounded-lg glass gradient-border p-4">
                 <h3 className="font-medium text-sm mb-2">Deal Alerts</h3>
                 <p className="text-xs text-muted-foreground mb-3">
                   Get notified when new deals match your interests.
@@ -227,7 +235,9 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
               <DealGrid deals={deals} columns={2} />
             ) : (
               <div className="text-center py-16">
-                <div className="text-6xl mb-4">🏷️</div>
+                <div className="flex justify-center mb-4">
+                  <TagIcon className="h-16 w-16 text-muted-foreground/40" />
+                </div>
                 <h3 className="text-xl font-semibold mb-2">No deals found</h3>
                 <p className="text-muted-foreground mb-4">
                   {selectedType || selectedSource

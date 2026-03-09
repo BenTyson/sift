@@ -71,13 +71,14 @@ export function DealGrid({
   }
 
   return (
-    <div className={`grid grid-cols-1 ${gridCols[columns]} gap-4`}>
-      {deals.map((deal) => (
+    <div className={`grid grid-cols-1 ${gridCols[columns]} gap-6`}>
+      {deals.map((deal, i) => (
         <DealCard
           key={deal.id}
           deal={deal}
           tool={deal.tool_id ? tools[deal.tool_id] : undefined}
           variant={variant}
+          index={i}
         />
       ))}
     </div>

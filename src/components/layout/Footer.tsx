@@ -24,7 +24,8 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-card/50">
+    <footer className="border-t border-border/40 bg-gradient-to-b from-surface-0 to-background relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="container px-4 md:px-6 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand & Newsletter */}
